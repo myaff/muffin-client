@@ -1,0 +1,28 @@
+@use 'vuetify/settings' with (
+  $overlay-opacity: 0.5,
+  $overlay-scrim-background: #000,
+);
+
+.v-overlay.v-dialog {
+  backdrop-filter: blur(5px);
+}
+.add-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+}
+.v-data-table-header {
+  &__content {
+    span:first-child {
+      margin-right: auto;
+    }
+  }
+}
+.close-dialog {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+.text-trunc-disable {
+  white-space: normal;
+}

@@ -1,0 +1,222 @@
+export default {
+  locale: {
+    ru: 'Русский',
+    en: 'English',
+  },
+  signin: {
+    title: 'Войдите',
+    alternate: {
+      text: 'Нет аккаунта?',
+      btn: 'Зарегистрируйтесь',
+    },
+  },
+  signup: {
+    title: 'Зарегистрируйтесь',
+    currency: 'Основная валюта',
+    alternate: {
+      text: 'Уже есть аккаунт?',
+      btn: 'Войдите',
+    },
+  },
+  form: {
+    email: {
+      label: 'Email',
+    },
+    password: {
+      label: 'Пароль',
+    },
+    firstName: {
+      label: 'Имя',
+    },
+    lastName: {
+      label: 'Фамилия',
+    },
+    middleName: {
+      label: 'Отчество',
+    },
+    dateFrom: {
+      label: 'Дата с',
+      prefix: 'С',
+    },
+    dateTo: {
+      label: 'Дата по',
+      prefix: 'По',
+    },
+  },
+  btn: {
+    submit: 'Отправить',
+    ok: 'OK',
+    save: 'Сохранить',
+    cancel: 'Отменить',
+    reset: 'Очистить',
+    edit: 'Редактировать',
+    signout: 'Выйти',
+    create: 'Создать',
+    createOne: 'Создать {msg}',
+    add: 'Добавить',
+    addOne: 'Добавить {msg}',
+  },
+  error: {
+    unknown: {
+      title: 'Что-то пошло не так!',
+      message: 'Пожалуйста, попробуйте позже'
+    },
+    unrated: {
+      title: 'Найдены записи о работе без ставки!',
+    },
+  },
+  empty: '{msg} не найдено',
+  page: {
+    home: 'Домой',
+    clients: 'Клиенты',
+    projects: 'Проекты',
+    tasks: 'Задачи',
+    tracking: 'Трекинг',
+    trackingTable: 'Таблица',
+    trackingCalendar: 'Календарь',
+    finance: 'Финансы',
+  },
+  clients: {
+    item: 'Клиент',
+    items: 'Клиенты',
+    empty: 'Клиентов не найдено',
+    nClients: 'Нет клиентов | 1 клиент | {n} клиента | {n} клиентов',
+    add: "Добавить клиента",
+    create: 'Создать клиента',
+    update: 'Обновить клиента',
+    type: {
+      person: 'Физическое лицо',
+      company: 'Юридическое лицо',
+    },
+    fields: {
+      name: 'Название',
+      form: 'Организационно-правовая форма',
+      type: 'Тип',
+    }
+  },
+  projects: {
+    item: 'Проект',
+    items: 'Проекты',
+    empty: 'Проектов не найдено',
+    nProjects: 'Нет проектов | 1 проект | {n} проекта | {n} проектов',
+    add: "Добавить проект",
+    create: 'Создать проект',
+    update: 'Обновить проект',
+    fields: {
+      title: 'Название',
+      url: 'Ссылка',
+      client: 'Клиент',
+      rate: 'Ставка',
+    },
+    active: 'Активный',
+    notActive: 'Не активный',
+    notStarted: 'Не начат',
+    external: 'Перейти',
+  },
+  rates: {
+    item: 'Ставка',
+    items: 'Ставки',
+    empty: 'Ставок не найдено',
+    nRates: 'Нет ставок | 1 ставка | {n} ставок',
+    add: "Добавить ставку",
+    create: 'Создать ставку',
+    update: 'Обновить ставку',
+    types: {
+      hourly: {
+        title: 'В час',
+        per: '/час',
+      },
+      monthly: {
+        title: 'В месяц',
+        per: '/мес',
+      },
+      fixed: {
+        title: 'Фиксированная',
+        per: ' фикс',
+      },
+    },
+    fields: {
+      currency: 'Валюта',
+      value: 'Значение',
+      type: 'Тип',
+      projects: 'Проекты',
+      dateFrom: 'Действует с',
+      dateTo: 'Действиует по',
+    }
+  },
+  tasks: {
+    item: 'Задача',
+    items: 'Задачи',
+    empty: 'Задач не найдено',
+    nTasks: 'Нет задач | 1 задача | {n} задач',
+    add: 'Добавить задачу',
+    create: 'Создать задачу',
+    update: 'Обновить задачу',
+    updateStatus: 'Обновить статус задачи',
+    statusGroups: {
+      todo: 'В работу',
+      progress: 'В работе',
+      approve: 'Утверждение',
+      done: 'Сделано',
+    },
+    fields: {
+      project: 'Проект',
+      status: 'Статус',
+      title: 'Название',
+      url: 'URL',
+      code: 'Код',
+    },
+    active: 'Активная',
+    notActive: 'Не активная',
+    notStarted: 'Не начата',
+  },
+  tracking: {
+    title: 'Трекинг',
+    item: 'Запись о работе',
+    items: 'Записи о работе',
+    empty: 'Записей о работе не найдено',
+    nTasks: 'Нет записей о работе | 1 запись о работе | {n} записей о работе',
+    add: 'Добавить запись о работе',
+    create: 'Создать запись о работе',
+    update: 'Обновить запись о работе',
+    fields: {
+      task: 'Задача',
+      date: 'Дата',
+      title: 'Название',
+      hours: 'Потрачено часов',
+      hoursShort: 'Часов',
+      note: 'Заметка',
+      rate: 'Ставка',
+      subtotal: 'Подитог',
+    },
+    total: 'Итого',
+    hours: '0 часов | 1 час | {n} часа | {n} часов',
+    saveManyError: 'Кажется, не все записи были сохранены',
+  },
+  groupBy: {
+    task: 'Группировать по задаче',
+    project: 'Группировать по проекту',
+    client: 'Группировать по клиенту'
+  },
+  summary: {
+    title: 'Сводка',
+    total: 'Итого',
+    totalVariant: 'Всего',
+    subtotal: 'Подитог',
+    active: 'Активных',
+  },
+  money: {
+    title: 'Деньги',
+  },
+  date: {
+    title: 'Дата',
+    range: 'Период',
+    day: 'День',
+    month: 'Месяц',
+    year: 'Год',
+  },
+  '10': '10',
+  '25': '25',
+  '50': '50',
+  '100': '100',
+}

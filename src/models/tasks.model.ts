@@ -1,0 +1,38 @@
+import { Project } from "./projects.model";
+import { RateDetail } from "./rates.model";
+import { Status } from "./status.model";
+import { Tracking } from "./tracking.model";
+
+
+export interface Task {
+  id: number;
+  title: string;
+  project: Project;
+  status: Status;
+  url?: string;
+  active: boolean;
+  rates?: RateDetail[];
+  code: string;
+}
+
+export interface TaskDetail extends Task {
+  tracking: Tracking[];
+}
+
+interface TaskUpdateRelations {
+  project?: Pick<Project, 'id'>;
+  status?: Pick<Status, 'id'>;
+}
+
+export type TaskCreate = Omit<Task, 'id' | 'rates'>;
+export type TaskUpdate = Partial<Omit<Task, 'project' | 'status'>> & TaskUpdateRelations;
+
+export function isTask(data: unknown): data is Task {
+  return data !== null
+    && typeof data === 'object'
+    && 'id' in data
+    && 'title' in data
+    && 'project' in data
+    && 'status' in data
+    && 'key' in data;
+}
