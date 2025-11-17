@@ -40,7 +40,7 @@ const calendarData = computed(() => {
     if (!acc.has(dateFormatted)) acc.set(dateFormatted, { tracking: [], total: 0 });
     const current = acc.get(dateFormatted) as TrackingDay;
     current.tracking.push(tracking);
-    current.total += tracking.hours;
+    current.total += tracking.amount;
     return acc;
   }, new Map<string, TrackingDay>());
 });
@@ -59,17 +59,17 @@ const calendarSummary = computed(() => {
   return Array.from(calendarData.value)
     .map(([_date, trackingDay]) => trackingDay)
     .reduce((acc, trackingDay) => {
-      acc.hours += trackingDay.total;
+      acc.amount += trackingDay.total;
       trackingDay.tracking.forEach(tracking => {
-        const rate = tracking.rate;
-        if (!rate || rate.type !== RateType.HOURLY) return;
-        if (!(rate.currency.id in acc.money)) {
-          acc.money[rate.currency.id] = 0;
+        const rate = tracking.rateVersion;
+        if (!rate || rate.ratePlan.type !== RateType.HOURLY) return;
+        if (!(rate.ratePlan.currency.id in acc.money)) {
+          acc.money[rate.ratePlan.currency.id] = 0;
         }
-        acc.money[rate.currency.id] += rate.value * tracking.hours;
+        acc.money[rate.ratePlan.currency.id] += rate.amount * tracking.amount;
       });
       return acc;
-    }, { hours: 0, money: {} as { [key: string]: 0 } });
+    }, { amount: 0, money: {} as { [key: string]: 0 } });
 });
 
 const onDayClick = (date: Date) => {
@@ -137,7 +137,7 @@ const cancel = () => {
         @day-click="day => onDayClick(day.date)">
         <template #headerEnd>
           <tracking-summary
-            :hours="calendarSummary.hours"
+            :amount="calendarSummary.amount"
             :money="calendarSummary.money"
             class="text-h5" />
         </template>

@@ -41,7 +41,7 @@ const formInitialData = computed(() => ({
   task: props.task,
   date: props.date.toISOString(),
   note: '',
-  hours: null as number | null,
+  amount: null as number | null,
 }));
 const formData = reactive([{...formInitialData.value}]);
 const onRowChange = async (data: typeof formInitialData.value, i: number) => {

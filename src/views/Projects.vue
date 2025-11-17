@@ -65,7 +65,6 @@ const getErrorOrDefault = (e: any) => {
       <v-col v-for="item in list" :key="item.id" cols="4">
         <v-card
           :title="item.title"
-          :subtitle="`${item.client.orgform.shortName} «${item.client.name}»`"
           @click="openDetail(item)" />
       </v-col>
       <v-btn icon="mdi-plus" size="x-large" color="primary" class="add-btn" @click="creationIsOpen = true" />

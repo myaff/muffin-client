@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, PropType, computed } from 'vue';
+import { reactive, PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
@@ -8,7 +8,7 @@ interface FormData {
   task: Task | null;
   date: string | null;
   note: string | null;
-  hours: number | null;
+  amount: number | null;
 }
 const { t } = useI18n();
 const props = defineProps({
@@ -33,7 +33,7 @@ const emits = defineEmits(['change']);
 const formData = reactive({...props.modelValue});
 const rules = {
   task: { required },
-  hours: { required },
+  amount: { required },
   date: { required },
 };
 const $v = useVuelidate(rules, formData);
@@ -57,12 +57,12 @@ const onBlur = (fieldName: keyof FormData) => {
     </v-col>
     <v-col>
       <v-text-field
-        v-model="formData.hours"
+        v-model="formData.amount"
         type="number"
         hide-spin-buttons
         :label="t('tracking.fields.hours')"
-        :error-messages="$v.hours.$errors.map(e => e.$message as string)"
-        @blur="onBlur('hours')" />
+        :error-messages="$v.amount.$errors.map(e => e.$message as string)"
+        @blur="onBlur('amount')" />
     </v-col>
     <v-col v-if="showDate">
       <v-text-field

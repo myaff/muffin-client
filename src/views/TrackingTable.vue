@@ -7,7 +7,7 @@ import TrackingSummary from '@/components/TrackingSummary.vue';
 import { useTrackingStore } from '@/store/tracking';
 import { Tracking, TrackingCreate, TrackingFilter } from '@/models/tracking.model';
 import { format } from 'date-fns';
-import { Rate, RateType } from '@/models/rates.model';
+import { RateType, RateVersion } from '@/models/rates.model';
 import { Task } from '@/models/tasks.model';
 import { useProjectsStore } from '@/store/projects';
 import { useClientsStore } from '@/store/clients';
@@ -63,7 +63,7 @@ const tableHeaders: UiTableHeaderCell[] = [
     width: '170',
   },
   {
-    key: 'hours',
+    key: 'amount',
     title: t('tracking.fields.hoursShort'),
     width: '100',
   },
@@ -92,12 +92,12 @@ interface TableSortItem {
 const tableSort = ref<TableSortItem[]>([{ key: 'date', order: 'desc' }]);
 const tableData = computed(() => {
   return list.value.map(tracking => {
-    const rate = tracking.rate;
-    const isHourlyRate = rate && rate.type === RateType.HOURLY;
-    const subtotal = isHourlyRate ? rate.value * tracking.hours : 0;
+    const rate = tracking.rateVersion;
+    const isHourlyRate = rate && rate.ratePlan.type === RateType.HOURLY;
+    const subtotal = isHourlyRate ? rate.amount * tracking.amount : 0;
     const currencyOptions = {
       key: 'currency',
-      ...(!!rate && {currency: rate.currency.id}),
+      ...(!!rate && {currency: rate.ratePlan.currency.id}),
     };
     return {
       id: tracking.id,
@@ -105,13 +105,13 @@ const tableData = computed(() => {
       rate,
       isHourlyRate,
       rateFormatted: isHourlyRate
-        ? n(rate.value, currencyOptions)
+        ? n(rate.amount, currencyOptions)
         : '-',
       date: d(tracking.date),
-      hours: tracking.hours,
+      amount: tracking.amount,
       subtotal,
       subtotalFormatted: isHourlyRate
-        ? n(rate.value * tracking.hours, currencyOptions)
+        ? n(rate.amount * tracking.amount, currencyOptions)
         : '-',
       note: tracking.note ?? '',
     }
@@ -119,15 +119,15 @@ const tableData = computed(() => {
 });
 const tableSummary = computed(() => {
   return tableData.value.reduce((acc, item) => {
-    acc.hours += item.hours;
+    acc.amount += item.amount;
     if (item.rate && item.subtotal) {
-      if (!(item.rate.currency.id in acc.money)) {
-        acc.money[item.rate.currency.id] = 0;
+      if (!(item.rate.ratePlan.currency.id in acc.money)) {
+        acc.money[item.rate.ratePlan.currency.id] = 0;
       }
-      acc.money[item.rate.currency.id] += item.subtotal;
+      acc.money[item.rate.ratePlan.currency.id] += item.subtotal;
     }
     return acc;
-  }, { hours: 0, money: {} as { [key: string]: number }});
+  }, { amount: 0, money: {} as { [key: string]: number }});
 });
 const grouppedTableHeaders: UiTableHeaderCell[] = [
   {
@@ -135,7 +135,7 @@ const grouppedTableHeaders: UiTableHeaderCell[] = [
     title: t('tracking.fields.task'),
   },
   {
-    key: 'hours',
+    key: 'amount',
     title: t('tracking.fields.hoursShort'),
     width: '100',
   },
@@ -163,10 +163,10 @@ const grouppedTableHeaders: UiTableHeaderCell[] = [
 ];
 interface GrouppedTableRow {
   task: Task,
-  rate: Rate,
+  rate: RateVersion,
   key: string;
   rateFormatted: string;
-  hours: number;
+  amount: number;
   subtotal: number;
   subtotalFormatted: string;
   tracking: typeof tableData.value;
@@ -180,7 +180,7 @@ const grouppedTableData = computed(() => {
         key,
         rate: item.rate,
         rateFormatted: item.rateFormatted,
-        hours: 0,
+        amount: 0,
         subtotal: 0,
         subtotalFormatted: item.isHourlyRate ? '' : '-',
         tracking: [],
@@ -188,11 +188,11 @@ const grouppedTableData = computed(() => {
     }
     const current = acc.get(key) as GrouppedTableRow;
     current.tracking.push(item);
-    current.hours += item.hours;
+    current.amount += item.amount;
     if (item.rate && item.isHourlyRate) {
       const currencyOptions = {
         key: 'currency',
-        ...(item.rate && { currency: item.rate.currency.id }),
+        ...(item.rate && { currency: item.rate.ratePlan.currency.id }),
       };
       current.subtotal += item.subtotal;
       current.subtotalFormatted = n(current.subtotal, currencyOptions);
@@ -272,7 +272,7 @@ const getErrorOrDefault = (e: any) => {
         <v-spacer />
         <v-col cols="auto" align-self="center">
           <tracking-summary
-            :hours="tableSummary.hours"
+            :amount="tableSummary.amount"
             :money="tableSummary.money"
             class="text-h5"/>
         </v-col>
@@ -320,7 +320,7 @@ const getErrorOrDefault = (e: any) => {
         <template #item="{ item, internalItem, isExpanded, toggleExpand }">
           <tr class="tracking-table__row" :class="{ expanded: isExpanded(internalItem) }">
             <td>{{ item.task.code + ' ' + item.task.title }}</td>
-            <td>{{ item.hours }}</td>
+            <td>{{ item.amount }}</td>
             <td>{{ item.rateFormatted }}</td>
             <td>{{ item.subtotalFormatted }}</td>
             <td></td>
@@ -334,7 +334,7 @@ const getErrorOrDefault = (e: any) => {
         <template v-slot:expanded-row="{ item }">
           <tr v-for="tracking in item.tracking" :key="tracking.id" class="tracking-table__row internal">
             <td class="pl-8">{{ tracking.date }}</td>
-            <td>{{ tracking.hours }}</td>
+            <td>{{ tracking.amount }}</td>
             <td>{{ tracking.rateFormatted }}</td>
             <td>{{ tracking.subtotalFormatted }}</td>
             <td colspan="2">{{ tracking.note }}</td>
@@ -351,7 +351,7 @@ const getErrorOrDefault = (e: any) => {
           <tr>
             <td>{{ item.task.title }}</td>
             <td>{{ item.date }}</td>
-            <td>{{ item.hours }}</td>
+            <td>{{ item.amount }}</td>
             <td>{{ item.rateFormatted }}</td>
             <td>{{ item.subtotalFormatted }}</td>
             <td>{{ item.note }}</td>

@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { onMounted, reactive, computed } from 'vue';
+import { onMounted, reactive, computed, PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
 import { useAppStore } from '@/store/app';
 import { RateType } from '@/models/rates.model';
-import { PropType } from 'vue';
 import { format } from 'date-fns';
 
 const props = defineProps({
@@ -31,7 +30,7 @@ onMounted(() => {
 // form
 const formInitialData = {
   currency: props.currency ? props.currency : 'RUB',
-  value: null as number | null,
+  amount: null as number | null,
   type: props.type ? props.type : RateType.HOURLY,
   dateFrom: format(new Date(), DATE_FORMAT),
   dateTo: null,
@@ -39,7 +38,7 @@ const formInitialData = {
 const formData = reactive(formInitialData);
 const rules = {
   currency: { required },
-  value: { required },
+  amount: { required },
   dateFrom: { required },
 };
 const $v = useVuelidate(rules, formData);
@@ -66,8 +65,8 @@ const cancel = () => {
           :disabled="lockCurrency && !!formData.currency"
           :error-messages="$v.currency.$errors.map(e => e.$message as string)"
           @blur="$v.currency.$touch" />
-        <v-text-field 
-          v-model.number="formData.value" 
+        <v-text-field
+          v-model.number="formData.amount"
           type="number"
           :label="t('rates.fields.value')"
           :error-messages="$v.currency.$errors.map(e => e.$message as string)"
@@ -86,16 +85,16 @@ const cancel = () => {
         </v-radio-group>
         <v-row>
           <v-col>
-            <v-text-field 
-              v-model="formData.dateFrom" 
+            <v-text-field
+              v-model="formData.dateFrom"
               type="date"
               :label="t('rates.fields.dateFrom')"
               :error-messages="$v.dateFrom.$errors.map(e => e.$message as string)"
               @blur="$v.dateFrom.$touch" />
           </v-col>
           <v-col>
-            <v-text-field 
-              v-model="formData.dateTo" 
+            <v-text-field
+              v-model="formData.dateTo"
               type="date"
               :label="t('rates.fields.dateTo')" />
           </v-col>

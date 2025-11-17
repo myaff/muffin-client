@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import { watchEffect } from 'vue';
-import { computed } from 'vue';
+import { reactive, ref, watchEffect, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
 import { useRatesStore } from '@/store/rates';
 import { useClientsStore } from '@/store/clients';
 import { UiAlert } from '@/models/ui.model';
-import { Rate, RateCreate } from '@/models/rates.model';
+import { RateCreate } from '@/models/rates.model';
 import RateCreateForm from './RateCreate.vue';
 import useError from '@/composables/useError';
 import useRate from '@/composables/useRate';

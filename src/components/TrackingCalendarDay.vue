@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Rate, RateDetail, RateType } from '@/models/rates.model';
+import { Rate, RateDetail, RateType, RateVersion } from '@/models/rates.model';
 import { Tracking, TrackingCreate, TrackingUpdate } from '@/models/tracking.model';
 import { UiAlert, UiTableHeaderCell } from '@/models/ui.model';
 import { PropType, computed, ref, watch } from 'vue';
@@ -44,7 +44,7 @@ const filter = computed(() => ({
 interface Updatable {
   editing: boolean,
   edited: boolean;
-  hours: number;
+  amount: number;
   note: string;
 }
 interface Creatable extends Updatable {
@@ -55,7 +55,7 @@ type TrackingCreatable = Omit<TrackingCreate, 'date'> & { task: Task | null; mod
 const createInitialData = computed<Creatable>(() => ({
   task: null,
   note: '',
-  hours: 0,
+  amount: 0,
   editing: true,
   edited: false,
 }));
@@ -72,7 +72,7 @@ const tableHeaders: UiTableHeaderCell[] = [
     width: '250',
   },
   {
-    key: 'hours',
+    key: 'amount',
     title: t('tracking.fields.hoursShort'),
     width: '100',
     sortable: false,
@@ -109,13 +109,13 @@ const tableData = computed(() => {
 });
 const tableTotal = computed(() => {
   return tableData.value.reduce((acc, row) => {
-    acc.hours += row.data.model.hours;
+    acc.amount += row.data.model.amount;
     if (row.rate?.type === RateType.HOURLY) {
       if (!(acc.money[row.rate.currency.id])) acc.money[row.rate.currency.id] = 0;
-      acc.money[row.rate.currency.id] += row.data.model.hours * row.rate.value;
+      acc.money[row.rate.currency.id] += row.data.model.amount * row.rate.amount;
     }
     return acc;
-  }, { hours: 0, money: {} as { [key: string]: number } });
+  }, { amount: 0, money: {} as { [key: string]: number } });
 })
 function createUpdatable(tracking: Tracking): TrackingUpdatable {
   return {
@@ -123,14 +123,14 @@ function createUpdatable(tracking: Tracking): TrackingUpdatable {
     model: {
       editing: false,
       edited: false,
-      hours: tracking.hours,
+      amount: tracking.amount,
       note: tracking.note || '',
     },
   };
 }
 interface TableRow {
   isNew: boolean;
-  rate: Rate | null;
+  rate: RateVersion | null;
   rateFormatted: string;
   subtotal: string;
   index: number;
@@ -140,10 +140,10 @@ function getTableRow(tracking: TrackingCreatable | TrackingUpdatable, index: num
   const task = isNew
     ? tasksMap.value.get((tracking.model as Creatable).task as number) || null
     : (tracking as TrackingUpdatable).task as Task;
-  let rate: RateDetail | null = null;
+  let rate: RateVersion | null = null;
   if (isNew && task) {
     rate = getRateByDate(task.project.rates ?? [], props.date)
-  } else if (!isNew) rate = (tracking as Tracking).rate;
+  } else if (!isNew) rate = (tracking as Tracking).rateVersion;
   const isHourlyRate = !!rate && rate.type === RateType.HOURLY;
   const currencyOptions = {
     key: 'currency',
@@ -152,7 +152,7 @@ function getTableRow(tracking: TrackingCreatable | TrackingUpdatable, index: num
   let rateFormatted = '-';
   if (rate) {
     rateFormatted = isHourlyRate
-      ? n(rate.value, currencyOptions) + ' ' + t(`rates.types.${rate.type}.per`)
+      ? n(rate.amount, currencyOptions) + ' ' + t(`rates.types.${rate.type}.per`)
       : t(`rates.types.${rate.type}.title`);
   }
   return {
@@ -161,7 +161,7 @@ function getTableRow(tracking: TrackingCreatable | TrackingUpdatable, index: num
     rate: rate || null,
     rateFormatted,
     subtotal: isHourlyRate
-      ? n(rate!.value * tracking.model.hours, currencyOptions)
+      ? n(rate!.amount * tracking.model.amount, currencyOptions)
       : '-',
     data: isNew
       ? createdFormData.value[index]
@@ -171,15 +171,16 @@ function getTableRow(tracking: TrackingCreatable | TrackingUpdatable, index: num
 function addRecord() {
   createdFormData.value.push({
     task: null as unknown as Task,
-    hours: createInitialData.value.hours,
+    amount: createInitialData.value.amount,
     note: createInitialData.value.note,
     model: { ...createInitialData.value },
+    mood: null,
   });
 }
 function commitChanges(item: TableRow) {
   if (item.isNew) {
     const itemData = item.data as TrackingCreatable;
-    itemData.hours = itemData.model.hours;
+    itemData.amount = itemData.model.amount;
     itemData.note = itemData.model.note;
     if (itemData.model.task && tasksMap.value.has(itemData.model.task)) {
       itemData.task = tasksMap.value.get(itemData.model.task) as Task;
@@ -189,10 +190,10 @@ function commitChanges(item: TableRow) {
   item.data.model.editing = false;
 }
 function cancelChanges(item: TableRow) {
-  if (item.isNew && !item.data.hours && !item.data.task) {
+  if (item.isNew && !item.data.amount && !item.data.task) {
     remove(item);
   } else {
-    item.data.model.hours = item.data.hours;
+    item.data.model.amount = item.data.amount;
     item.data.model.note = item.data.note || '';
     item.data.model.editing = false;
     item.data.model.edited = false;
@@ -210,13 +211,13 @@ function save() {
     .filter(item => item.model.edited)
     .map(item => ({
       id: item.id,
-      hours: item.model.hours,
+      amount: item.model.amount,
       note: item.model.note,
     }));
   const created: TrackingCreate[] = createdFormData.value.map(item => ({
     task: item.task,
     date: formatISO(props.date),
-    hours: item.model.hours,
+    amount: item.model.amount,
     note: item.model.note,
   }));
   const reqs = [];
@@ -263,7 +264,7 @@ function save() {
               item-value="id"
               density="compact"
               hide-details
-              @update:model-value="item.data.model.hours = 1" />
+              @update:model-value="item.data.model.amount = 1" />
             <span v-else>
               {{ item.data.task.code + ' ' + item.data.task.title }}
             </span>
@@ -272,11 +273,11 @@ function save() {
             <v-text-field
               v-if="item.data.model.editing"
               type="number"
-              v-model.number="item.data.model.hours"
+              v-model.number="item.data.model.amount"
               min="0"
               :hide-details="true" density="compact" />
             <div v-else class="px-4 py-2">
-              {{ item.data.model.hours }}
+              {{ item.data.model.amount }}
             </div>
           </td>
           <td>{{ item.rateFormatted }}</td>
@@ -329,7 +330,7 @@ function save() {
       class="mx-4" />
     <v-card-actions class="pa-4">
       <tracking-summary
-        class="text-h6" :hours="tableTotal.hours"
+        class="text-h6" :amount="tableTotal.amount"
         :money="tableTotal.money" />
       <v-spacer />
       <v-btn :to="{ name: 'trackingCalendar' }" size="large" variant="text">

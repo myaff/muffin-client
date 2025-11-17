@@ -61,40 +61,40 @@ interface MoneySumItem {
   formatted: string;
 }
 interface TrackingSummary {
-  hours: number;
+  amount: number;
   money: { [key: string]: MoneySumItem },
   unrated: Tracking[];
 }
 const trackingSummary = computed(() => {
   return (project.value?.tracking || []).reduce((acc, tracking) => {
-    acc.hours += tracking.hours;
-    if (!tracking.rate) acc.unrated.push(tracking);
-    const isHourlyRate = tracking.rate && tracking.rate.type === RateType.HOURLY;
+    acc.amount += tracking.amount;
+    if (!tracking.rateVersion) acc.unrated.push(tracking);
+    const isHourlyRate = tracking.rateVersion && tracking.rateVersion.ratePlan.type === RateType.HOURLY;
     if (isHourlyRate) {
-      const currency = tracking.rate.currency.id;
+      const currency = tracking.rateVersion.ratePlan.currency.id;
       if (!acc.money[currency]) {
         acc.money[currency] = { value: 0, formatted: '-' };
       }
       const current = acc.money[currency] as MoneySumItem;
-      current.value += tracking.hours * tracking.rate.value;
+      current.value += tracking.amount * tracking.rateVersion.amount;
       if (current.value) {
         current.formatted = n(current.value, { key: 'currency', currency });
       }
     }
     return acc;
-  }, { hours: 0, money: {}, unrated: [] } as TrackingSummary);
+  }, { amount: 0, money: {}, unrated: [] } as TrackingSummary);
 });
 const trackingSummaryFormatted = computed(() => {
-  const hours = t('tracking.hours', { n: trackingSummary.value.hours });
+  const amount = t('tracking.hours', { n: trackingSummary.value.amount });
   const money = Object.keys(trackingSummary.value.money)
     .map(currency => trackingSummary.value.money[currency].formatted)
     .join(' + ');
-  return [hours, money].filter(item => !!item).join(', ');
+  return [amount, money].filter(item => !!item).join(', ');
 })
 
 function fetch(id: string | number) {
   isLoading.value = true;
-  const preparedId = typeof id === 'string' ? parseInt(id) : id;
+  const preparedId = typeof id === 'string' ? Number.parseInt(id) : id;
   projectsStore.fetchDetail(preparedId)
     .then(data => project.value = data)
     .finally(() => isLoading.value = false);
@@ -161,7 +161,7 @@ const openCreation = () => {
         </template>
       </v-card-title>
       <v-card-subtitle>
-        {{ `${project.client.orgform.shortName} ${project.client.name}` }}
+        {{ project.client.name }}
         <v-chip :color="project.active ? 'success' : 'error'" class="ml-4">
           {{ t(`projects.${ project.active ? 'active' : 'notActive' }`) }}
         </v-chip>
@@ -216,7 +216,7 @@ const openCreation = () => {
         <p v-for="tracking in trackingSummary.unrated"
           :key="tracking.id"
           class="text-body-1">
-          {{ `${d(tracking.date)} ${tracking.task.title} - ${t('tracking.hours', { n: tracking.hours })}` }}
+          {{ `${d(tracking.date)} ${tracking.task.title} - ${t('tracking.hours', { n: tracking.amount })}` }}
         </p>
       </v-alert>
     </template>

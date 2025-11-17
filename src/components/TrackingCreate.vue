@@ -17,12 +17,12 @@ const formInitialData = {
   task: null as Task | null,
   date: new Date().toISOString(),
   note: '',
-  hours: 0,
+  amount: 0,
 };
 const formData = reactive(formInitialData);
 const rules = {
   task: { required },
-  hours: { required },
+  amount: { required },
   date: { required },
 };
 const $v = useVuelidate(rules, formData);
@@ -50,13 +50,13 @@ const cancel = () => {
           class="mb-4"
           @blur="$v.task.$touch" />
         <v-text-field
-          v-model="formData.hours"
+          v-model="formData.amount"
           type="number"
           hide-spin-buttons
           :label="t('tracking.fields.hours')"
-          :error-messages="$v.hours.$errors.map(e => e.$message as string)"
+          :error-messages="$v.amount.$errors.map(e => e.$message as string)"
           class="mb-4"
-          @blur="$v.hours.$touch" />
+          @blur="$v.amount.$touch" />
         <v-text-field
           v-model="formData.date"
           type="date"

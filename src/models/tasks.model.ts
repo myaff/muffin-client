@@ -1,11 +1,11 @@
+import { BaseContentEntity, Estimatable, Moodable } from "./common.model";
 import { Project } from "./projects.model";
 import { RateDetail } from "./rates.model";
 import { Status } from "./status.model";
 import { Tracking } from "./tracking.model";
 
 
-export interface Task {
-  id: number;
+export interface Task extends BaseContentEntity, Estimatable, Moodable {
   title: string;
   project: Project;
   status: Status;
@@ -13,6 +13,10 @@ export interface Task {
   active: boolean;
   rates?: RateDetail[];
   code: string;
+  description: string;
+  priority: number;
+  startDate: string;
+  endDate: string;
 }
 
 export interface TaskDetail extends Task {
@@ -34,5 +38,5 @@ export function isTask(data: unknown): data is Task {
     && 'title' in data
     && 'project' in data
     && 'status' in data
-    && 'key' in data;
+    && 'code' in data;
 }
