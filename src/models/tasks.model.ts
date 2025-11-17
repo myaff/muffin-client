@@ -1,6 +1,6 @@
 import { BaseContentEntity, Estimatable, Moodable } from "./common.model";
 import { Project } from "./projects.model";
-import { RateDetail } from "./rates.model";
+import { RateDetail, RatePlanWithVersions } from "./rates.model";
 import { Status } from "./status.model";
 import { Tracking } from "./tracking.model";
 
@@ -17,6 +17,7 @@ export interface Task extends BaseContentEntity, Estimatable, Moodable {
   priority: number;
   startDate: string;
   endDate: string;
+  ratePlan: RatePlanWithVersions;
 }
 
 export interface TaskDetail extends Task {

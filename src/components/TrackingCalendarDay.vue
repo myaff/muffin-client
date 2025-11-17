@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Rate, RateDetail, RateType, RateVersion } from '@/models/rates.model';
+import { Rate, RateDetail, RatePlan, RateType, RateVersion } from '@/models/rates.model';
 import { Tracking, TrackingCreate, TrackingUpdate } from '@/models/tracking.model';
 import { UiAlert, UiTableHeaderCell } from '@/models/ui.model';
 import { PropType, computed, ref, watch } from 'vue';
@@ -11,7 +11,7 @@ import { useTrackingStore } from '@/store/tracking';
 import useError from '@/composables/useError';
 import router from '@/router';
 import TrackingSummary from '@/components/TrackingSummary.vue';
-import { getRateByDate } from '@/helpers/rate.helper';
+import { getRateByDate, getRateVersionByDate } from '@/helpers/rate.helper';
 
 const { t, d, n } = useI18n();
 const props = defineProps({
@@ -49,6 +49,7 @@ interface Updatable {
 }
 interface Creatable extends Updatable {
   task: number | null;
+  rateVersion: RateVersion | null;
 }
 type TrackingUpdatable = Tracking & { model: Updatable };
 type TrackingCreatable = Omit<TrackingCreate, 'date'> & { task: Task | null; model: Creatable };
@@ -58,6 +59,7 @@ const createInitialData = computed<Creatable>(() => ({
   amount: 0,
   editing: true,
   edited: false,
+  rateVersion: null as RateVersion | null,
 }));
 const updatableFormData = ref<TrackingUpdatable[]>(props.tracking.map(item => createUpdatable(item)));
 watch(() => props.tracking, value => {
@@ -110,9 +112,9 @@ const tableData = computed(() => {
 const tableTotal = computed(() => {
   return tableData.value.reduce((acc, row) => {
     acc.amount += row.data.model.amount;
-    if (row.rate?.type === RateType.HOURLY) {
-      if (!(acc.money[row.rate.currency.id])) acc.money[row.rate.currency.id] = 0;
-      acc.money[row.rate.currency.id] += row.data.model.amount * row.rate.amount;
+    if (row.rate?.ratePlan.type === RateType.HOURLY) {
+      if (!(acc.money[row.rate.ratePlan.currency.id])) acc.money[row.rate.ratePlan.currency.id] = 0;
+      acc.money[row.rate.ratePlan.currency.id] += row.data.model.amount * row.rate.amount;
     }
     return acc;
   }, { amount: 0, money: {} as { [key: string]: number } });
@@ -142,18 +144,25 @@ function getTableRow(tracking: TrackingCreatable | TrackingUpdatable, index: num
     : (tracking as TrackingUpdatable).task as Task;
   let rate: RateVersion | null = null;
   if (isNew && task) {
-    rate = getRateByDate(task.project.rates ?? [], props.date)
+    // rate = getRateByDate(task.project.rates ?? [], props.date)
+    const version = getRateVersionByDate(task.ratePlan, props.date);
+    if (version) {
+      rate = {
+        ...version,
+        ratePlan: { ...task.ratePlan },
+      };
+    }
   } else if (!isNew) rate = (tracking as Tracking).rateVersion;
-  const isHourlyRate = !!rate && rate.type === RateType.HOURLY;
+  const isHourlyRate = !!rate && rate.ratePlan.type === RateType.HOURLY;
   const currencyOptions = {
     key: 'currency',
-    ...(!!rate && {currency: rate.currency.id}),
+    ...(!!rate && {currency: rate.ratePlan.currency.id}),
   };
   let rateFormatted = '-';
   if (rate) {
     rateFormatted = isHourlyRate
-      ? n(rate.amount, currencyOptions) + ' ' + t(`rates.types.${rate.type}.per`)
-      : t(`rates.types.${rate.type}.title`);
+      ? n(rate.amount, currencyOptions) + ' ' + t(`rates.types.${rate.ratePlan.type}.per`)
+      : t(`rates.types.${rate.ratePlan.type}.title`);
   }
   return {
     isNew,
@@ -175,15 +184,19 @@ function addRecord() {
     note: createInitialData.value.note,
     model: { ...createInitialData.value },
     mood: null,
+    rateVersion: null as unknown as RateVersion,
   });
 }
 function commitChanges(item: TableRow) {
+  console.log(item);
   if (item.isNew) {
     const itemData = item.data as TrackingCreatable;
     itemData.amount = itemData.model.amount;
     itemData.note = itemData.model.note;
     if (itemData.model.task && tasksMap.value.has(itemData.model.task)) {
       itemData.task = tasksMap.value.get(itemData.model.task) as Task;
+      if (item.rate) itemData.rateVersion = item.rate;
+      itemData.model.rateVersion = item.rate;
     }
   }
   item.data.model.edited = true;
@@ -219,6 +232,8 @@ function save() {
     date: formatISO(props.date),
     amount: item.model.amount,
     note: item.model.note,
+    mood: item.mood,
+    rateVersion: item.rateVersion,
   }));
   const reqs = [];
   if (edited.length) reqs.push(trackingStore.update(edited, false));

@@ -1,6 +1,8 @@
 // Utilities
+import { Country } from '@/models/country.model';
 import { Currency } from '@/models/currency.model';
 import { Status } from '@/models/status.model';
+import { CountryService } from '@/services/country.service';
 import { CurrencyService } from '@/services/currency.service';
 import { StatusService } from '@/services/status.service';
 import { defineStore } from 'pinia'
@@ -18,6 +20,14 @@ export const useAppStore = defineStore('app', () => {
       })
   }
 
+  const countryService = new CountryService();
+  const countries = ref<Country[]>([]);
+
+  const fetchCountries = () => {
+    return countryService.findAll()
+      .then(data => countries.value = data);
+  }
+
   const statusService = new StatusService();
   const statuses = ref<Status[]>([]);
 
@@ -30,6 +40,7 @@ export const useAppStore = defineStore('app', () => {
 
   return {
     currencies, fetchCurrencies,
+    countries, fetchCountries,
     statuses, fetchStatuses,
   };
 });

@@ -48,14 +48,23 @@ export enum RateScope {
 
 export interface RatePlan extends BaseContentEntity {
   currency: Currency;
-  client: Client;
-  project: Project;
   name: string;
   type: RateType;
   recurringUnit: RateRecurringUnit;
   scope: RateScope;
   active: boolean;
 }
+
+export interface RatePlanWithVersions extends RatePlan {
+  versions: Omit<RateVersion, 'ratePlan'>[];
+}
+
+export interface RatePlanWithRelations extends RatePlan {
+  client: Client;
+  project: Project;
+}
+
+export type RatePlanFull = RatePlanWithVersions & RatePlanWithRelations;
 
 export interface RateVersion extends BaseContentEntity {
   ratePlan: RatePlan;
