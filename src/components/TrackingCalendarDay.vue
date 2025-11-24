@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Rate, RateDetail, RatePlan, RateType, RateVersion } from '@/models/rates.model';
+import { RateType, RateVersion } from '@/models/rates.model';
 import { Tracking, TrackingCreate, TrackingUpdate } from '@/models/tracking.model';
 import { UiAlert, UiTableHeaderCell } from '@/models/ui.model';
 import { PropType, computed, ref, watch } from 'vue';
@@ -11,7 +11,7 @@ import { useTrackingStore } from '@/store/tracking';
 import useError from '@/composables/useError';
 import router from '@/router';
 import TrackingSummary from '@/components/TrackingSummary.vue';
-import { getRateByDate, getRateVersionByDate } from '@/helpers/rate.helper';
+import { getRateVersionByDate } from '@/helpers/rate.helper';
 
 const { t, d, n } = useI18n();
 const props = defineProps({
@@ -28,6 +28,7 @@ const props = defineProps({
     default: 0,
   },
 });
+const emits = defineEmits(['save', 'cancel']);
 const tasksStore = useTasksStore();
 const trackingStore = useTrackingStore();
 const tasks = computed(() => tasksStore.list);
@@ -254,15 +255,16 @@ function save() {
       .finally(() => {
         trackingStore.fetchList(filter.value);
         isSaving.value = false;
+        emits('save');
       });
-  } else router.push({ name: 'trackingCalendar' });
+  } else emits('cancel');
 }
 </script>
 
 <template>
   <v-card class="tracking-calendar-day">
-    <v-card-title class="py-4">
-      {{ t('tracking.title') + ' ' + d(date) }}
+    <v-card-title class="py-4 text-upper-first">
+      {{ d(date, 'medium') }}
     </v-card-title>
     <v-data-table
       :headers="tableHeaders"
@@ -348,7 +350,7 @@ function save() {
         class="text-h6" :amount="tableTotal.amount"
         :money="tableTotal.money" />
       <v-spacer />
-      <v-btn :to="{ name: 'trackingCalendar' }" size="large" variant="text">
+      <v-btn size="large" variant="text" @click="emits('cancel')">
         {{ t('btn.cancel') }}
       </v-btn>
       <v-btn size="large" color="primary" variant="flat" :loading="isSaving" @click="save">

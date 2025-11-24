@@ -1,4 +1,4 @@
-import { createI18n } from 'vue-i18n';
+import { createI18n, DefineDateTimeFormat } from 'vue-i18n';
 import { ru as vtfRu, en as vtfEn } from 'vuetify/locale';
 import ru from './ru';
 import en from './en';
@@ -37,6 +37,12 @@ const ruPluralization = (choice: number, choicesLength: number) => {
   return choicesLength < 4 ? 2 : 3
 }
 
+const dateTimeFormats: DefineDateTimeFormat = {
+  short: { day: '2-digit', month: '2-digit', year: 'numeric' },
+  medium: { day: '2-digit', month: '2-digit', year: 'numeric', weekday: 'long' },
+  shortTime: { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' },
+}
+
 export const availableLocales = ['ru', 'en'] as const;
 export type AvailableLocales = typeof availableLocales[number];
 
@@ -46,6 +52,10 @@ export default createI18n({
   fallbackLocale: 'en',
   messages,
   numberFormats,
+  datetimeFormats: {
+    ru: dateTimeFormats,
+    en: dateTimeFormats,
+  },
   pluralRules: {
     ru: ruPluralization,
   },

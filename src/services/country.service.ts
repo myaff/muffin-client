@@ -4,9 +4,9 @@ import { Country } from "@/models/country.model";
 import { AxiosError } from "axios";
 
 export class CountryService extends ApiService implements ListService<Country> {
-  resoucrce = '/currency';
+  resource = '/country';
   findAll() {
-    return CountryService.api.get<Country[]>(this.resoucrce)
+    return CountryService.api.get<Country[]>(this.resource)
     .then(res => res.data)
     .catch((error: AxiosError) => {
       throw { title: error.code, message: error.message };

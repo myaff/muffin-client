@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router';
 import TaskCreateForm from '@/components/TaskCreate.vue';
 import TaskUpdateStatusForm from '@/components/TaskUpdateStatus.vue';
 import { useTasksStore } from '@/store/tasks';
-import { TaskCreate, Task } from '@/models/tasks.model';
+import { TaskCreate, Task, TaskUpdate } from '@/models/tasks.model';
 import { useAppStore } from '@/store/app';
 import { Status, StatusGroup, StatusGroupColor } from '@/models/status.model';
 import TaskCard from '@/components/TaskCard.vue';
@@ -16,14 +16,12 @@ const route = useRoute();
 const router = useRouter();
 const tasksStore = useTasksStore();
 const list = computed(() => tasksStore.list);
-const isLoading = ref(false);
+const isLoading = computed(() => tasksStore.isLoading);
 const loadingError = ref<UiAlert | null>(null);
 
 const fetchList = async () => {
-  isLoading.value = true;
   tasksStore.fetchList()
-    .catch(e => loadingError.value = getErrorOrDefault(e))
-    .finally(() => isLoading.value = false);
+    .catch(e => loadingError.value = getErrorOrDefault(e));
 }
 
 const detailIsOpen = ref(false);
@@ -89,7 +87,7 @@ const board = computed(() => {
 });
 
 onMounted(() => {
-  fetchList();
+  if (!isLoading.value) fetchList();
   if (!statuses.value.length) appStore.fetchStatuses();
 });
 
@@ -97,18 +95,36 @@ onMounted(() => {
 const isSending = ref(false);
 const sendingError = ref<UiAlert | null>(null);
 const creationIsOpen = ref(false);
+const taskToEdit = ref<Task | null>(null);
 const create = (formData: TaskCreate) => {
   isSending.value = true;
   tasksStore.create(formData)
+    .then(fetchList)
     .catch(e => sendingError.value = getErrorOrDefault(e))
     .finally(() => {
       isSending.value = false;
       creationIsOpen.value = false;
     });
 }
+const update = (formData: TaskUpdate) => {
+  if (!taskToEdit.value) return;
+  isSending.value = true;
+  tasksStore.update(taskToEdit.value.id, formData)
+    .then(() => fetchList())
+    .catch(e => sendingError.value = getErrorOrDefault(e))
+    .finally(() => {
+      isSending.value = false;
+      creationIsOpen.value = false;
+      taskToEdit.value = null;
+    })
+}
 const cancel = () => {
   creationIsOpen.value = false;
+  if (taskToEdit.value) taskToEdit.value = null;
 }
+watch(creationIsOpen, value => {
+  if (!value) cancel();
+})
 const getErrorOrDefault = (e: any) => {
   return {
     title: e?.title ?? t('error.unknown.title'),
@@ -151,6 +167,11 @@ const updateStatus = (formData: { task: Task; status: Status }) => {
     .then(() => tasksStore.fetchList())
     .catch(e => updatingError.value = getErrorOrDefault(e))
     .finally(closeUpdateStatus);
+}
+
+const onTaskEdit = (task: Task) => {
+  taskToEdit.value = task;
+  creationIsOpen.value = true;
 }
 </script>
 
@@ -208,9 +229,12 @@ const updateStatus = (formData: { task: Task; status: Status }) => {
         </v-btn>
       </v-alert>
     </v-layout>
-    <v-dialog v-model="creationIsOpen" width="640">
+    <v-dialog v-model="creationIsOpen" width="90vw" max-width="1280">
       <template v-if="!sendingError">
-        <task-create-form @cancel="cancel" @submit="create" />
+        <task-create-form
+          :task="taskToEdit"
+          @cancel="cancel"
+          @submit="e => !!taskToEdit ? update(e) : create(e)" />
         <v-overlay v-model="isSending" contained class="align-center justify-center">
           <v-progress-circular indeterminate />
         </v-overlay>
@@ -231,8 +255,8 @@ const updateStatus = (formData: { task: Task; status: Status }) => {
       </template>
       <v-alert v-else :title="updatingError?.title" :text="updatingError?.message" type="error" />
     </v-dialog>
-    <v-dialog v-model="detailIsOpen" width="800">
-      <router-view />
+    <v-dialog v-model="detailIsOpen" width="90vw" max-width="1280">
+      <router-view @edit="onTaskEdit" />
       <v-btn v-if="detailIsOpen"
         icon="mdi-close"
         variant="plain"

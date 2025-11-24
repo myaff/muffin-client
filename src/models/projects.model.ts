@@ -1,10 +1,10 @@
 import { Client } from "./clients.model";
-import { BaseContentEntity, Estimatable, Moodable } from "./common.model";
+import { BaseContentEntity, Deliverable, Estimatable, Moodable } from "./common.model";
 import { RateDetail, RatePlan } from "./rates.model";
 import { Task } from "./tasks.model";
 import { Tracking } from "./tracking.model";
 
-export interface Project extends BaseContentEntity, Estimatable, Moodable {
+export interface Project extends BaseContentEntity, Estimatable, Moodable, Deliverable {
   title: string;
   active: boolean;
   client: Client;
@@ -15,8 +15,6 @@ export interface Project extends BaseContentEntity, Estimatable, Moodable {
   code: string;
   description: string | null;
   priority: number | null;
-  startDate: string | null;
-  endDate: string | null;
 }
 
 interface ProjectUpdateRelations {

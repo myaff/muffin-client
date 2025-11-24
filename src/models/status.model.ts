@@ -16,6 +16,8 @@ export interface Status {
   id: number;
   group: StatusGroup;
   title: string;
+  default?: boolean;
+  final?: boolean;
 }
 
 export type StatusCreate = Omit<Status, 'id'>;

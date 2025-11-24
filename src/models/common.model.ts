@@ -32,6 +32,11 @@ export interface BaseContentEntity {
   updatedAt: string;
 }
 
+export interface Deliverable {
+  startDate: string | null;
+  endDate: string | null;
+}
+
 export interface Estimate {
   min: number | null;
   max: number | null;

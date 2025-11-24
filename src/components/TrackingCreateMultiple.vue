@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { onMounted, reactive, computed } from 'vue';
+import { onMounted, reactive, computed, PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useVuelidate } from '@vuelidate/core';
 import { useTasksStore } from '@/store/tasks';
 import { Task } from '@/models/tasks.model';
 import TrackingCreateRow from './TrackingCreateRow.vue';
-import { PropType } from 'vue';
 
 const props = defineProps({
   task: {

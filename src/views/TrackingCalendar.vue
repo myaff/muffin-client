@@ -163,7 +163,9 @@ const cancel = () => {
       <tracking-calendar-day
         :date="openedDay.date"
         :tracking="openedDay.tracking"
-        :total="openedDay.total" />
+        :total="openedDay.total"
+        @save="dayIsOpen = false"
+        @cancel="dayIsOpen = false" />
     </v-dialog>
   </div>
 </template>

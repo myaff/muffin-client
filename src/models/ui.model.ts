@@ -13,3 +13,9 @@ export interface UiTableHeaderCell {
   minWidth?: string;
   maxWidth?: string;
 }
+
+export interface WidgetInfoItem {
+  title: string;
+  value: string;
+  href?: string;
+}

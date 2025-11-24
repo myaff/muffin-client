@@ -1,11 +1,11 @@
-import { BaseContentEntity, Estimatable, Moodable } from "./common.model";
+import { BaseContentEntity, Deliverable, Estimatable, Moodable } from "./common.model";
 import { Project } from "./projects.model";
 import { RateDetail, RatePlanWithVersions } from "./rates.model";
 import { Status } from "./status.model";
 import { Tracking } from "./tracking.model";
 
 
-export interface Task extends BaseContentEntity, Estimatable, Moodable {
+export interface Task extends BaseContentEntity, Estimatable, Moodable, Deliverable {
   title: string;
   project: Project;
   status: Status;
@@ -14,10 +14,16 @@ export interface Task extends BaseContentEntity, Estimatable, Moodable {
   rates?: RateDetail[];
   code: string;
   description: string;
-  priority: number;
-  startDate: string;
-  endDate: string;
+  priority: TaskPriority;
   ratePlan: RatePlanWithVersions;
+}
+
+export enum TaskPriority {
+  HIGHEST = 1,
+  HIGH = 2,
+  MEDIUM = 3,
+  LOW = 4,
+  LOWEST = 5,
 }
 
 export interface TaskDetail extends Task {
