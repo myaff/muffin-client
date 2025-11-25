@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Project, ProjectUpdate } from '@/models/projects.model';
+import { Project, ProjectUpdate, ProjectDetail } from '@/models/projects.model';
 import { RateCreate, RateType } from '@/models/rates.model';
 import { UiAlert } from '@/models/ui.model';
 import { useProjectsStore } from '@/store/projects';
@@ -55,6 +55,13 @@ const datesFormattedForTracking = computed(() => {
 })
 const projectCurrency = computed(() => project.value?.rates?.length ? project.value?.rates.at(0)?.currency.id : undefined);
 const projectRateType = computed(() => project.value?.rates?.length ? project.value?.rates.at(0)?.type : undefined);
+const projectTracking = computed(() => {
+  if (!project.value) return [];
+  return project.value.tasks.reduce((acc, task) => {
+    if (task?.tracking?.length) acc.push(...task?.tracking);
+    return acc;
+  }, [] as (ProjectDetail['tasks'][number]['tracking'][number])[])
+})
 interface TasksSummary {
   total: number;
   active: number;
@@ -79,7 +86,7 @@ interface TrackingSummary {
   unrated: Tracking[];
 }
 const trackingSummary = computed(() => {
-  return (project.value?.tracking || []).reduce((acc, tracking) => {
+  return projectTracking.value.reduce((acc, tracking) => {
     acc.amount += tracking.amount;
     if (!tracking.rateVersion) acc.unrated.push(tracking);
     const isHourlyRate = tracking.rateVersion && tracking.rateVersion.ratePlan.type === RateType.HOURLY;

@@ -1,7 +1,7 @@
 import { Client } from "./clients.model";
 import { BaseContentEntity, Deliverable, Estimatable, Moodable } from "./common.model";
 import { RateDetail, RatePlan } from "./rates.model";
-import { Task } from "./tasks.model";
+import { Task, TaskDetail } from "./tasks.model";
 import { Tracking } from "./tracking.model";
 
 export interface Project extends BaseContentEntity, Estimatable, Moodable, Deliverable {
@@ -27,7 +27,8 @@ export type ProjectCreate = Omit<Project, 'id'>;
 export type ProjectUpdate = Partial<Omit<Project, 'id' | 'rates' | 'client' | 'tasks'>> & ProjectUpdateRelations;
 
 export interface ProjectDetail extends Project {
-  tracking: Tracking[];
+  // tracking: Tracking[];
+  tasks: TaskDetail[];
 }
 
 export function isProject(data: unknown): data is Project {
