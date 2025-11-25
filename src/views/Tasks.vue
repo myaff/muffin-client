@@ -3,7 +3,7 @@ import { UiAlert } from '@/models/ui.model';
 import { reactive, ref, watch, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import TaskCreateForm from '@/components/TaskCreate.vue';
+import TaskCreateUpdateForm from '@/components/TaskCreateUpdate.vue';
 import TaskUpdateStatusForm from '@/components/TaskUpdateStatus.vue';
 import { useTasksStore } from '@/store/tasks';
 import { TaskCreate, Task, TaskUpdate } from '@/models/tasks.model';
@@ -231,7 +231,7 @@ const onTaskEdit = (task: Task) => {
     </v-layout>
     <v-dialog v-model="creationIsOpen" width="90vw" max-width="1280">
       <template v-if="!sendingError">
-        <task-create-form
+        <task-create-update-form
           :task="taskToEdit"
           @cancel="cancel"
           @submit="e => !!taskToEdit ? update(e) : create(e)" />

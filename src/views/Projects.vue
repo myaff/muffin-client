@@ -3,9 +3,9 @@ import { UiAlert } from '@/models/ui.model';
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import ProjectCreateForm from '@/components/ProjectCreate.vue';
+import ProjectCreateUpdateForm from '@/components/ProjectCreateUpdate.vue';
 import { useProjectsStore } from '@/store/projects';
-import { Project, ProjectCreate } from '@/models/projects.model';
+import { Project, ProjectCreate, ProjectUpdate } from '@/models/projects.model';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -42,20 +42,38 @@ function openDetail(item: Project) {
 const isSending = ref(false);
 const sendingError = ref<UiAlert | null>(null);
 const creationIsOpen = ref(false);
+const projectToEdit = ref<Project | null>(null);
 const create = (formData: ProjectCreate) => {
   isSending.value = true;
   projectsStrore.create(formData)
     .catch(e => sendingError.value = getErrorOrDefault(e))
     .finally(() => creationIsOpen.value = false);
 }
+const update = (formData: ProjectUpdate) => {
+  if (!projectToEdit.value) return;
+  isSending.value = true;
+  projectsStrore.update(projectToEdit.value.id, formData)
+    .then(() => fetchList())
+    .catch(e => sendingError.value = getErrorOrDefault(e))
+    .finally(() => {
+      isSending.value = false;
+      creationIsOpen.value = false;
+      projectToEdit.value = null;
+    })
+}
 const cancel = () => {
   creationIsOpen.value = false;
+  if (projectToEdit.value) projectToEdit.value = null;
 }
 const getErrorOrDefault = (e: any) => {
   return {
     title: e?.title ?? t('error.unknown.title'),
     message: e?.message || e?.errorMessage || t('error.unknown.message'),
   };
+}
+function onProjectEdit(project: Project) {
+  projectToEdit.value = project;
+  creationIsOpen.value = true;
 }
 </script>
 
@@ -78,9 +96,12 @@ const getErrorOrDefault = (e: any) => {
         </v-btn>
       </v-alert>
     </v-layout>
-    <v-dialog v-model="creationIsOpen" width="640">
+    <v-dialog v-model="creationIsOpen" width="90vw" max-width="1280">
       <template v-if="!sendingError">
-        <project-create-form @cancel="cancel" @submit="create" />
+        <ProjectCreateUpdateForm
+          :project="projectToEdit"
+          @cancel="cancel"
+          @submit="e => !!projectToEdit ? update(e) : create(e)" />
         <v-overlay v-model="isSending" contained class="align-center justify-center">
           <v-progress-circular indeterminate />
         </v-overlay>
@@ -93,8 +114,8 @@ const getErrorOrDefault = (e: any) => {
         variant="plain"
         @click="creationIsOpen = false" />
     </v-dialog>
-    <v-dialog v-model="detailIsOpen" width="800">
-      <router-view />
+    <v-dialog v-model="detailIsOpen" width="90vw" max-width="1280">
+      <router-view @edit="onProjectEdit" />
       <v-btn v-if="detailIsOpen"
         icon="mdi-close"
         variant="plain"
