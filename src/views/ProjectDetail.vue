@@ -41,8 +41,17 @@ function updateActive() {
     .finally(() => activeIsUpdating.value = false);
 }
 
+const projectCurrency = computed(() => project.value?.rates?.length ? project.value?.rates.at(0)?.currency.id : undefined);
+const projectRateType = computed(() => project.value?.rates?.length ? project.value?.rates.at(0)?.type : undefined);
+const projectTracking = computed(() => {
+  if (!project.value) return [];
+  return project.value.tasks.reduce((acc, task) => {
+    if (task?.tracking?.length) acc.push(...task.tracking);
+    return acc;
+  }, [] as (ProjectDetail['tasks'][number]['tracking'][number])[])
+})
 const dates = computed<Date[]>(() => {
-  return (project.value?.tracking || []).reduce((rng, tracking) => {
+  return projectTracking.value.reduce((rng, tracking) => {
     const trackingDate = new Date(tracking.date);
     if (!rng[0] || isBefore(trackingDate, rng[0])) rng[0] = trackingDate;
     if (!rng[1] || isBefore(rng[1], trackingDate)) rng[1] = trackingDate;
@@ -50,17 +59,8 @@ const dates = computed<Date[]>(() => {
   }, [null, null] as [Date | null, Date | null]) as Date[];
 });
 const datesFormattedForTracking = computed(() => {
-  if (!project.value || !project.value.tracking?.length) return '';
+  if (!project.value || !projectTracking.value?.length) return '';
   return dates.value.map(date => d(date)).join(' - ');
-})
-const projectCurrency = computed(() => project.value?.rates?.length ? project.value?.rates.at(0)?.currency.id : undefined);
-const projectRateType = computed(() => project.value?.rates?.length ? project.value?.rates.at(0)?.type : undefined);
-const projectTracking = computed(() => {
-  if (!project.value) return [];
-  return project.value.tasks.reduce((acc, task) => {
-    if (task?.tracking?.length) acc.push(...task?.tracking);
-    return acc;
-  }, [] as (ProjectDetail['tasks'][number]['tracking'][number])[])
 })
 interface TasksSummary {
   total: number;
