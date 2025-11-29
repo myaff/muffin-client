@@ -229,6 +229,12 @@ export default {
     subtotal: 'Subtotal',
     active: 'Active',
   },
+  activity: {
+    show: 'Show',
+    all: 'All',
+    active: 'Active',
+    notActive: 'Archive',
+  },
   money: {
     title: 'Money',
   },
@@ -245,6 +251,7 @@ export default {
     undefined: 'Undefined',
   },
   priority: {
+    title: 'Priority',
     HIGHEST: 'Highest',
     HIGH: 'High',
     MEDIUM: 'Medium',

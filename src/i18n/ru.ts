@@ -229,6 +229,12 @@ export default {
     subtotal: 'Подитог',
     active: 'Активных',
   },
+  activity: {
+    show: 'Показать',
+    all: 'Все',
+    active: 'Активные',
+    notActive: 'Архивные',
+  },
   money: {
     title: 'Деньги',
   },
@@ -245,6 +251,7 @@ export default {
     undefined: 'Не задана',
   },
   priority: {
+    title: 'Приоритет',
     HIGHEST: 'Высочайший',
     HIGH: 'Высокий',
     MEDIUM: 'Средний',
