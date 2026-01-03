@@ -15,7 +15,8 @@ export class ClientsService extends ApiService implements ListService<Client>, E
 
   update(id: string | number, formData: ClientUpdate) {
     return ClientsService.api
-      .patch(`${this.resource}/${id}`, formData);
+      .patch<Client>(`${this.resource}/${id}`, formData)
+      .then(res => res.data);
   }
 
   delete(id: string | number) {

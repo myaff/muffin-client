@@ -15,7 +15,8 @@ export class ProjectsService extends ApiService implements ListService<Project>,
 
   update(id: string | number, formData: ProjectUpdate) {
     return ProjectsService.api
-      .patch(`${this.resource}/${id}`, formData);
+      .patch<ProjectDetail>(`${this.resource}/${id}`, formData)
+      .then((res) => res.data);
   }
 
   delete(id: string | number) {

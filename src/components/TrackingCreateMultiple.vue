@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { onMounted, reactive, computed } from 'vue';
+import { onMounted, reactive, computed, PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useVuelidate } from '@vuelidate/core';
 import { useTasksStore } from '@/store/tasks';
 import { Task } from '@/models/tasks.model';
 import TrackingCreateRow from './TrackingCreateRow.vue';
-import { PropType } from 'vue';
 
 const props = defineProps({
   task: {
@@ -41,7 +40,7 @@ const formInitialData = computed(() => ({
   task: props.task,
   date: props.date.toISOString(),
   note: '',
-  hours: null as number | null,
+  amount: null as number | null,
 }));
 const formData = reactive([{...formInitialData.value}]);
 const onRowChange = async (data: typeof formInitialData.value, i: number) => {
@@ -82,6 +81,7 @@ const cancel = () => {
           :show-task="showTask"
           @change="data => onRowChange(data, i)">
           <template #actions>
+            <v-btn icon="mdi-emoticon-plus-outline" />
             <v-btn v-if="i === formData.length - 1" icon="mdi-plus" variant="plain" size="small" @click="addColumn" />
             <v-btn v-else icon="mdi-delete" color="error" variant="plain" size="small" @click="removeColumn(i)" />
           </template>

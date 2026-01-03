@@ -4,8 +4,7 @@ import { Rate, RateType } from '@/models/rates.model';
 import { useRatesStore } from '@/store/rates';
 import useVuelidate from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
-import { PropType, reactive, ref } from 'vue';
-import { computed } from 'vue';
+import { PropType, reactive, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
@@ -70,8 +69,8 @@ const submit = async () => {
   <v-card :title="t('rates.add')">
     <v-card-item>
       <v-form @submit="submit">
-        <v-select 
-          v-model="$v.rates.$model" 
+        <v-select
+          v-model="$v.rates.$model"
           :items="rates"
           item-value="id"
           :item-props="(rate) => formatRateForSelect(rate)"

@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n';
 
 const { t, n } = useI18n();
 const props = defineProps({
-  hours: {
+  amount: {
     type: Number,
     default: 0,
   },
@@ -26,7 +26,7 @@ const moneyStr = computed(() => {
       {{ t('tracking.total') }}:
     </div>
     <div class="px-4">
-      {{ t('tracking.hours', { n: hours }) + (moneyStr ? ', ' : '') }}
+      {{ t('tracking.hours', { n: amount }) + (moneyStr ? ', ' : '') }}
     </div>
     <div v-if="moneyStr" class="px-4">
       {{ moneyStr }}

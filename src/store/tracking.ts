@@ -1,7 +1,7 @@
 import { FetchListParams } from "@/models/common.model";
 import { Tracking, TrackingCreate, TrackingFilter, TrackingUpdate } from "@/models/tracking.model";
 import { TrackingService } from "@/services/tracking.service";
-import { endOfDay, endOfMonth, formatISO, startOfDay, startOfMonth } from "date-fns";
+import { endOfMonth, formatISO, startOfMonth } from "date-fns";
 import { defineStore } from "pinia";
 import { computed, reactive, ref, watch } from "vue";
 import { useUserStore } from "./user";
@@ -21,10 +21,10 @@ export const useTrackingStore = defineStore('tracking', () => {
       const date = new Date(item.date);
       if (acc.has(date)) {
         const accItem = acc.get(date) as TrackingDay;
-        accItem.total += item.hours;
+        accItem.total += item.amount;
         accItem.tracking.push(item);
       } else {
-        acc.set(date, { date, total: item.hours, tracking: [item] });
+        acc.set(date, { date, total: item.amount, tracking: [item] });
       }
       return acc;
     }, new Map<Date, TrackingDay>());

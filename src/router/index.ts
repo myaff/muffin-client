@@ -46,7 +46,14 @@ const routes = [
             key: 'clients',
             icon: 'mdi-account-multiple',
           },
-        }
+        },
+        children: [
+          {
+            path: ':id',
+            name: 'client',
+            component: () => import('@/views/ClientDetail.vue'),
+          },
+        ],
       },
       {
         path: 'projects',

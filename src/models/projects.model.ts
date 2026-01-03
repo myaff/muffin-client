@@ -1,20 +1,24 @@
 import { Client } from "./clients.model";
-import { RateDetail } from "./rates.model";
-import { Task } from "./tasks.model";
+import { BaseContentEntity, Deliverable, Estimatable, Moodable } from "./common.model";
+import { RateDetail, RatePlan } from "./rates.model";
+import { Task, TaskDetail } from "./tasks.model";
 import { Tracking } from "./tracking.model";
 
-export interface Project {
-  id: number;
+export interface Project extends BaseContentEntity, Estimatable, Moodable, Deliverable {
   title: string;
   active: boolean;
   client: Client;
-  url?: string;
+  url: string | null;
   rates?: RateDetail[];
+  ratePlan: RatePlan | null;
   tasks?: Task[];
+  code: string;
+  description: string | null;
+  priority: number | null;
 }
 
 interface ProjectUpdateRelations {
-  rates?: Pick<RateDetail, 'id'>[]; 
+  rates?: Pick<RateDetail, 'id'>[];
   tasks?: Pick<Task, 'id'>[];
   client?: Pick<Client, 'id'>;
 }
@@ -23,12 +27,14 @@ export type ProjectCreate = Omit<Project, 'id'>;
 export type ProjectUpdate = Partial<Omit<Project, 'id' | 'rates' | 'client' | 'tasks'>> & ProjectUpdateRelations;
 
 export interface ProjectDetail extends Project {
-  tracking: Tracking[];
+  // tracking: Tracking[];
+  tasks: TaskDetail[];
 }
 
 export function isProject(data: unknown): data is Project {
   return data !== null
     && typeof data === 'object'
     && 'id' in data
+    && 'code' in data
     && 'title' in data;
 }

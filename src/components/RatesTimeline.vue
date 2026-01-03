@@ -47,7 +47,7 @@ const list = computed(() => {
         :dot-color="rate.isCurrent ? 'success' : undefined"
         size="small">
         <div class="text-h6">
-          {{ n(rate.value, { key: 'currency', currency: rate.currency.id }) }}
+          {{ n(rate.amount, { key: 'currency', currency: rate.currency.id }) }}
           <span class="text-caption text-medium-emphasis">
             {{ t(`rates.types.${rate.type}.per`) }}
           </span>

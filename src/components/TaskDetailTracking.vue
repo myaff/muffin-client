@@ -3,7 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { type PropType, computed, ref } from 'vue';
 import { format } from 'date-fns';
 import { type Tracking } from '@/models/tracking.model';
-import { Rate, RateType } from '@/models/rates.model';
+import { RateType, RateVersion } from '@/models/rates.model';
 import TrackingSummary from '@/components/TrackingSummary.vue';
 const { t, n, d } = useI18n();
 const props = defineProps({
@@ -14,28 +14,28 @@ const props = defineProps({
 });
 interface TrackingDay {
   date: string;
-  hours: number;
-  rate: Rate;
+  amount: number;
+  rate: RateVersion;
   subtotal: number;
   subtotalFormatted: string;
 }
 const trackingByDay = computed(() => {
   const trackingMap = props.tracking.reduce((acc, item) => {
     const date = format(new Date(item.date), 'yyyy-MM-dd');
-    const isHourlyRate = item.rate && item.rate.type === RateType.HOURLY;
+    const isHourlyRate = item.rateVersion && item.rateVersion.ratePlan.type === RateType.HOURLY;
     if (!(date in acc)) {
       acc[date] = {
         date,
-        rate: item.rate,
-        hours: 0,
+        rate: item.rateVersion,
+        amount: 0,
         subtotal: 0,
         subtotalFormatted: isHourlyRate ? '' : '-',
       };
     }
-    acc[date].hours += item.hours;
-    if (item.rate && isHourlyRate) {
-      acc[date].subtotal += item.hours * item.rate.value;
-      acc[date].subtotalFormatted = n(acc[date].subtotal, getCurrencyOptions(item.rate));
+    acc[date].amount += item.amount;
+    if (item.rateVersion?.amount && isHourlyRate) {
+      acc[date].subtotal += item.amount * item.rateVersion.amount;
+      acc[date].subtotalFormatted = n(acc[date].subtotal, getCurrencyOptions(item.rateVersion));
     }
     return acc;
   }, {} as { [key: string]: TrackingDay });
@@ -43,7 +43,7 @@ const trackingByDay = computed(() => {
 });
 interface TrackingMonth {
   date: Date;
-  hours: number;
+  amount: number;
   subtotal: number;
   subtotalFormatted: string;
   tracking: typeof trackingByDay.value,
@@ -53,20 +53,20 @@ const tableData = computed(() => {
     const date = new Date(day.date);
     date.setDate(1);
     const key = format(date, 'yyyy-MM');
-    const isHourlyRate = day.rate && day.rate.type === RateType.HOURLY;
+    const isHourlyRate = day.rate && day.rate.ratePlan.type === RateType.HOURLY;
     if (!(key in acc)) {
       acc[key] = {
         date,
-        hours: 0,
+        amount: 0,
         subtotal: 0,
         subtotalFormatted: isHourlyRate ? '' : '-',
         tracking: []
       };
     }
-    acc[key].hours += day.hours;
+    acc[key].amount += day.amount;
     acc[key].tracking.push(day);
-    if (day.rate && isHourlyRate) {
-      acc[key].subtotal += day.hours * day.rate.value;
+    if (day.rate?.amount && isHourlyRate) {
+      acc[key].subtotal += day.amount * day.rate.amount;
       acc[key].subtotalFormatted = n(acc[key].subtotal, getCurrencyOptions(day.rate));
     }
     return acc;
@@ -75,15 +75,15 @@ const tableData = computed(() => {
 });
 const summary = computed(() => {
   return tableData.value.reduce((acc, item) => {
-    acc.hours += item.hours;
+    acc.amount += item.amount;
     item.tracking.forEach(tracking => {
-      if (!(tracking.rate.currency.id in acc.money)) {
-        acc.money[tracking.rate.currency.id] = 0;
+      if (!(tracking.rate.ratePlan.currency.id in acc.money)) {
+        acc.money[tracking.rate.ratePlan.currency.id] = 0;
       }
-      acc.money[tracking.rate.currency.id] += tracking.subtotal;
+      acc.money[tracking.rate.ratePlan.currency.id] += tracking.subtotal;
     })
     return acc;
-  }, { hours: 0, money: {} as { [key: string]: number } });
+  }, { amount: 0, money: {} as { [key: string]: number } });
 })
 const expanded = ref([]);
 const itemsPerPage = ref(6);
@@ -96,7 +96,7 @@ const tableHeaders = [
     width: '150',
   },
   {
-    key: 'hours',
+    key: 'amount',
     title: t('tracking.fields.hoursShort'),
   },
   {
@@ -104,10 +104,10 @@ const tableHeaders = [
     title: t('summary.subtotal'),
   },
 ]
-function getCurrencyOptions(rate: Rate | null) {
+function getCurrencyOptions(rate: RateVersion | null) {
   return {
     key: 'currency',
-    ...(rate && { currency: rate.currency.id }),
+    ...(rate && { currency: rate.ratePlan.currency.id }),
   };
 }
 function firstUpper(str: string) {
@@ -119,7 +119,7 @@ function firstUpper(str: string) {
   <div class="task-detail-tracking">
     <h5 class="d-flex justify-space-between align-center text-h5 mb-4">
       {{ t('tracking.title') }}
-      <tracking-summary :hours="summary.hours" :money="summary.money" class="text-body-1" />
+      <tracking-summary :amount="summary.amount" :money="summary.money" class="text-body-1" />
     </h5>
     <v-data-table
       v-model:expanded="expanded"
@@ -136,7 +136,7 @@ function firstUpper(str: string) {
             <td>
               {{ firstUpper(d(item.date, { month: 'long', year: 'numeric' })) }}
             </td>
-            <td>{{ item.hours }}</td>
+            <td>{{ item.amount }}</td>
             <td>{{ item.subtotalFormatted }}</td>
             <td>
               <v-btn
@@ -149,7 +149,7 @@ function firstUpper(str: string) {
       <template #expanded-row="{ item }">
         <tr v-for="tracking in item.tracking" :key="tracking.date" class="tracking-table__row internal">
           <td class="pl-8">{{ d(tracking.date) }}</td>
-          <td>{{ tracking.hours }}</td>
+          <td>{{ tracking.amount }}</td>
           <td>{{ tracking.subtotalFormatted }}</td>
           <td></td>
         </tr>

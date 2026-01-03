@@ -1,13 +1,14 @@
-import { Project, ProjectCreate, ProjectUpdate } from "@/models/projects.model";
+import { Project, ProjectCreate, ProjectDetail, ProjectUpdate } from "@/models/projects.model";
 import { ProjectsService } from "@/services/projects.service";
 import { defineStore } from "pinia";
-import { onMounted, ref, watch } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
 import { useUserStore } from "./user";
 
 export const useProjectsStore = defineStore('projects', () => {
   const service = new ProjectsService();
   const list = ref<Project[]>([]);
   const isLoading = ref(false);
+  const detailsMap = reactive<Map<Project['id'], ProjectDetail>>(new Map());
   const userStore = useUserStore();
 
   watch(() => userStore.accessToken, value => {
@@ -28,7 +29,19 @@ export const useProjectsStore = defineStore('projects', () => {
   }
 
   function fetchDetail(id: number) {
-    return service.findOne(id);
+    return service.findOne(id).then(data => {
+      if (data) detailsMap.set(id, data);
+      return data;
+    });
+  }
+
+  function getDetail(id: Project['id']) {
+    if (detailsMap.has(id)) {
+      return Promise
+        .resolve(detailsMap.get(id) as Project)
+        .then(() => fetchDetail(id));
+    }
+    return fetchDetail(id);
   }
 
   function create(formData: ProjectCreate) {
@@ -40,8 +53,20 @@ export const useProjectsStore = defineStore('projects', () => {
   }
 
   function update(id: number, formData: ProjectUpdate) {
-    return service.update(id, formData).then(fetchList);
+    return service.update(id, formData).then(data => {
+      if (data) detailsMap.set(id, data);
+      return data;
+    });
   }
 
-  return { list, isLoading, fetchList, fetchDetail, create, update };
+  return {
+    list,
+    isLoading,
+    fetchList,
+    fetchDetail,
+    detailsMap,
+    getDetail,
+    create,
+    update,
+  };
 });

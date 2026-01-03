@@ -3,27 +3,30 @@ import { UiAlert } from '@/models/ui.model';
 import { reactive, ref, watch, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import TaskCreateForm from '@/components/TaskCreate.vue';
+import TaskCreateUpdateForm from '@/components/TaskCreateUpdate.vue';
 import TaskUpdateStatusForm from '@/components/TaskUpdateStatus.vue';
 import { useTasksStore } from '@/store/tasks';
-import { TaskCreate, Task } from '@/models/tasks.model';
+import { TaskCreate, Task, TaskUpdate } from '@/models/tasks.model';
 import { useAppStore } from '@/store/app';
 import { Status, StatusGroup, StatusGroupColor } from '@/models/status.model';
 import TaskCard from '@/components/TaskCard.vue';
+import useActivity from '@/composables/useActivity';
+import usePriority from '@/composables/usePriority';
+import { useProjectsStore } from '@/store/projects';
+import { useClientsStore } from '@/store/clients';
+import { isBoolean } from 'lodash-es';
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const tasksStore = useTasksStore();
 const list = computed(() => tasksStore.list);
-const isLoading = ref(false);
+const isLoading = computed(() => tasksStore.isLoading);
 const loadingError = ref<UiAlert | null>(null);
 
 const fetchList = async () => {
-  isLoading.value = true;
   tasksStore.fetchList()
-    .catch(e => loadingError.value = getErrorOrDefault(e))
-    .finally(() => isLoading.value = false);
+    .catch(e => loadingError.value = getErrorOrDefault(e));
 }
 
 const detailIsOpen = ref(false);
@@ -43,25 +46,71 @@ function openDetail(item: Task) {
   detailIsOpen.value = true;
 }
 
-// view settings
-const appStore = useAppStore();
-const statuses = computed(() => appStore.statuses);
-const search = ref('');
+// filters
+const projectsStore = useProjectsStore();
+type TaskProject = Task['project'];
+const projects = computed(() => projectsStore.list);
+const filterProjects = ref<(TaskProject['id'])[]>([]);
 
-const grouppedTasks = computed(() => {
-  return list.value.reduce((acc, task) => {
-    if (!acc[task.status.group]) acc[task.status.group] = [];
-    if (matchFilters(task)) acc[task.status.group].push(task);
-    return acc;
-  }, {} as { [key in StatusGroup]: Task[] })
+const clientsStore = useClientsStore();
+type TaskClient = Task['project']['client'];
+const clients = computed(() => clientsStore.list);
+const filterClients = ref<(TaskClient['id'])[]>([]);
+
+const { activity } = useActivity(t);
+const filterActivity = ref(activity.value?.at(0));
+
+const { priorities } = usePriority(t);
+type TaskPriority = (typeof priorities.value)[number];
+const filterPriority = ref<(TaskPriority['value'])[]>([]);
+
+const search = ref('');
+const showExtraFilter = ref(false);
+const hasExtraFilters = computed(() => {
+  return filterClients.value.length
+  || filterProjects.value.length
+  || filterPriority.value.length;
+});
+const hasFilters = computed(() => {
+  return search.value
+    || isBoolean(filterActivity.value)
+    || hasExtraFilters.value;
 })
 
 const matchFilters = (task: Task) => {
-  if (!search.value) return true;
+  if (!hasFilters.value) return true;
+
+  if (isBoolean(filterActivity.value)
+    && task.active !== filterActivity.value) {
+    return false;
+  }
+  if (filterPriority.value.length
+    && !filterPriority.value.includes(task.priority)) {
+    return false;
+  }
+  if (filterProjects.value.length
+    && !filterProjects.value.includes(task.project.id)) {
+    return false;
+  }
+  if (filterClients.value.length
+    && !filterClients.value.includes(task.project.client.id)) {
+    return false;
+  }
+
   const reg = new RegExp(search.value, 'im');
   return reg.test(task.code) || reg.test(task.title);
 }
 
+// view settings
+const grouppedTasks = computed(() => {
+  return list.value.reduce((acc, task) => {
+    if (!acc[task.status.group]) acc[task.status.group] = [];
+    if (!hasFilters.value || matchFilters(task)) acc[task.status.group].push(task);
+    return acc;
+  }, {} as { [key in StatusGroup]: Task[] })
+})
+const appStore = useAppStore();
+const statuses = computed(() => appStore.statuses);
 interface StatusBoardColumn {
   key: StatusGroup;
   title: string;
@@ -89,7 +138,7 @@ const board = computed(() => {
 });
 
 onMounted(() => {
-  fetchList();
+  if (!isLoading.value) fetchList();
   if (!statuses.value.length) appStore.fetchStatuses();
 });
 
@@ -97,18 +146,36 @@ onMounted(() => {
 const isSending = ref(false);
 const sendingError = ref<UiAlert | null>(null);
 const creationIsOpen = ref(false);
+const taskToEdit = ref<Task | null>(null);
 const create = (formData: TaskCreate) => {
   isSending.value = true;
   tasksStore.create(formData)
+    .then(fetchList)
     .catch(e => sendingError.value = getErrorOrDefault(e))
     .finally(() => {
       isSending.value = false;
       creationIsOpen.value = false;
     });
 }
+const update = (formData: TaskUpdate) => {
+  if (!taskToEdit.value) return;
+  isSending.value = true;
+  tasksStore.update(taskToEdit.value.id, formData)
+    .then(() => fetchList())
+    .catch(e => sendingError.value = getErrorOrDefault(e))
+    .finally(() => {
+      isSending.value = false;
+      creationIsOpen.value = false;
+      taskToEdit.value = null;
+    })
+}
 const cancel = () => {
   creationIsOpen.value = false;
+  if (taskToEdit.value) taskToEdit.value = null;
 }
+watch(creationIsOpen, value => {
+  if (!value) cancel();
+})
 const getErrorOrDefault = (e: any) => {
   return {
     title: e?.title ?? t('error.unknown.title'),
@@ -152,11 +219,108 @@ const updateStatus = (formData: { task: Task; status: Status }) => {
     .catch(e => updatingError.value = getErrorOrDefault(e))
     .finally(closeUpdateStatus);
 }
+
+const onTaskEdit = (task: Task) => {
+  taskToEdit.value = task;
+  creationIsOpen.value = true;
+}
 </script>
 
 <template>
   <div class="page w-100 align-center justify-center">
-    <v-text-field v-model="search" prepend-inner-icon="mdi-magnify" hide-details class="mb-8" />
+    <div class="filter pb-8">
+      <v-row wrap>
+        <v-col cols="2" sm="1" align-self="end">
+          <v-btn-group size="small">
+            <v-btn
+              icon="mdi-filter-variant"
+              variant="plain"
+              slim
+              @click="showExtraFilter = !showExtraFilter">
+              <v-badge v-if="hasExtraFilters" dot color="error">
+                <v-icon icon="mdi-filter-variant" />
+              </v-badge>
+              <v-icon v-else icon="mdi-filter-variant" />
+            </v-btn>
+          </v-btn-group>
+        </v-col>
+        <v-col cols="10" sm="6" md="7">
+          <v-text-field
+            v-model="search"
+            key="tasks-search"
+            prepend-inner-icon="mdi-magnify"
+            hide-details
+            clearable />
+        </v-col>
+        <v-col cols="12" sm="5" md="4">
+          <v-select
+            :model-value="filterActivity"
+            :label="t('activity.show')"
+            :items="activity"
+            key="tasks-activity"
+            item-title="title"
+            item-value="value"
+            hide-details
+            @update:model-value="value => filterActivity = value" />
+        </v-col>
+      </v-row>
+      <v-expand-transition>
+        <v-row v-show="showExtraFilter">
+          <v-col cols="12" sm="4">
+            <v-select
+              :model-value="filterClients"
+              :label="t('clients.items')"
+              :items="clients"
+              item-title="name"
+              item-value="id"
+              key="tasks-clients"
+              multiple
+              hide-details
+              clearable
+              @update:model-value="value => filterClients = value" />
+          </v-col>
+          <v-col cols="12" sm="4">
+            <v-select
+              :model-value="filterProjects"
+              :label="t('projects.items')"
+              :items="projects"
+              hide-details
+              item-title="title"
+              item-value="id"
+              key="tasks-projects"
+              multiple
+              clearable
+              @update:model-value="value => filterProjects = value" />
+          </v-col>
+          <v-col cols="12" sm="4">
+            <v-select
+              v-model="filterPriority"
+              :items="priorities"
+              :label="t('priority.title')"
+              item-title="title"
+              item-value="value"
+              key="tasks-priority"
+              multiple
+              clearable
+              hide-details
+              :item-props="item => ({ ...item, title: item.title.toUpperCase() })">
+              <template #selection="{ item }">
+                <v-chip :prepend-icon="item.raw.icon" :color="item.raw.color" closable>
+                  {{ item.title }}
+                </v-chip>
+              </template>
+              <template #item="{ props, item }">
+                <v-list-item v-bind="{...props, title: ''}">
+                  <v-chip :prepend-icon="item.raw.icon" :color="item.raw.color" density="comfortable">
+                    {{ item.title }}
+                  </v-chip>
+                </v-list-item>
+              </template>
+            </v-select>
+          </v-col>
+        </v-row>
+      </v-expand-transition>
+    </div>
     <v-row v-if="!isLoading && list.length" align="stretch" class="fill-height">
       <v-col v-for="(column, key) in board" :key="key" cols="12" :lg="12 / Object.keys(board).length">
         <v-sheet rounded="lg" class="column fill-height pa-2">
@@ -208,9 +372,12 @@ const updateStatus = (formData: { task: Task; status: Status }) => {
         </v-btn>
       </v-alert>
     </v-layout>
-    <v-dialog v-model="creationIsOpen" width="640">
+    <v-dialog v-model="creationIsOpen" width="90vw" max-width="1280">
       <template v-if="!sendingError">
-        <task-create-form @cancel="cancel" @submit="create" />
+        <task-create-update-form
+          :task="taskToEdit"
+          @cancel="cancel"
+          @submit="e => !!taskToEdit ? update(e) : create(e)" />
         <v-overlay v-model="isSending" contained class="align-center justify-center">
           <v-progress-circular indeterminate />
         </v-overlay>
@@ -231,8 +398,8 @@ const updateStatus = (formData: { task: Task; status: Status }) => {
       </template>
       <v-alert v-else :title="updatingError?.title" :text="updatingError?.message" type="error" />
     </v-dialog>
-    <v-dialog v-model="detailIsOpen" width="800">
-      <router-view />
+    <v-dialog v-model="detailIsOpen" width="90vw" max-width="1280">
+      <router-view @edit="onTaskEdit" />
       <v-btn v-if="detailIsOpen"
         icon="mdi-close"
         variant="plain"

@@ -1,13 +1,14 @@
-import { Task, TaskCreate, TaskUpdate } from "@/models/tasks.model";
+import { Task, TaskCreate, TaskDetail, TaskUpdate } from "@/models/tasks.model";
 import { TaskService } from "@/services/tasks.service";
 import { defineStore } from "pinia";
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch, reactive } from "vue";
 import { useUserStore } from "./user";
 
 export const useTasksStore = defineStore('tasks', () => {
   const service = new TaskService();
   const list = ref<Task[]>([]);
   const isLoading = ref(false);
+  const detailsMap = reactive<Map<Task['id'], TaskDetail>>(new Map());
   const userStore = useUserStore();
 
   watch(() => userStore.accessToken, value => {
@@ -27,21 +28,42 @@ export const useTasksStore = defineStore('tasks', () => {
       .finally(() => isLoading.value = false);
   }
 
-  function fetchDetail(id: number) {
-    return service.findOne(id);
+  function fetchDetail(id: Task['id']) {
+    return service.findOne(id).then(data => {
+      if (data) detailsMap.set(id, data);
+      return data;
+    });
+  }
+
+  function getDetail(id: Task['id']) {
+    if (detailsMap.has(id)) {
+      return Promise
+        .resolve(detailsMap.get(id) as TaskDetail)
+        .then(() => fetchDetail(id));
+    }
+    return fetchDetail(id);
   }
 
   function create(formData: TaskCreate) {
-    return service.create(formData)
+    return service.create(formData);
+  }
+
+  function update(id: Task['id'], formData: TaskUpdate) {
+    return service.update(id, formData)
       .then(data => {
-        fetchList();
+        if (data) detailsMap.set(id, data);
         return data;
       });
   }
 
-  function update(id: number, formData: TaskUpdate) {
-    return service.update(id, formData).then(fetchList);
-  }
-
-  return { list, fetchList, fetchDetail, create, update };
+  return {
+    list,
+    detailsMap,
+    isLoading,
+    fetchList,
+    getDetail,
+    fetchDetail,
+    create,
+    update,
+  };
 });

@@ -72,10 +72,10 @@ function setToday() {
   emits('update:model-value', new Date());
 }
 function setMonthValue(value: string) {
-  emits('update:model-value', setMonth(props.modelValue, parseInt(value) - 1));
+  emits('update:model-value', setMonth(props.modelValue, Number.parseInt(value) - 1));
 }
 function setYearValue(value: string) {
-  emits('update:model-value', setYear(props.modelValue, parseInt(value)));
+  emits('update:model-value', setYear(props.modelValue, Number.parseInt(value)));
 }
 </script>
 

@@ -15,7 +15,8 @@ export class TaskService extends ApiService implements ListService<Task>, Entity
 
   update(id: string | number, formData: TaskUpdate) {
     return TaskService.api
-      .patch(`${this.resource}/${id}`, formData);
+      .patch<TaskDetail>(`${this.resource}/${id}`, formData)
+      .then(data => data.data);
   }
 
   delete(id: string | number) {

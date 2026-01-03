@@ -1,30 +1,33 @@
-import { Orgform } from "./orgform.model";
+import { BaseContentEntity, Moodable } from "./common.model";
+import { Country } from "./country.model";
+import { RatePlan } from "./rates.model";
 
-export enum ClientType {
-  PERSON = 'person',
-  COMPANY = 'company',
-}
-
-export interface Client {
-  id: number;
-  type: ClientType;
+export interface Client extends BaseContentEntity, Moodable {
   name: string;
-  orgform: Orgform;
+  country: Country;
+  ratePlan: RatePlan | null;
+  fullName: string | null;
+  active: boolean;
+  region: string | null;
+  city: string | null;
+  streetAddress: string | null;
+  zipCode: number | null;
+  taxId: string | null;
+  website: string | null;
+  phone: string | null;
+  email: string | null;
 }
 
-export type ClientCreate = {
-  type: ClientType;
-  name: string;
-  orgform: number;
-}
+export type ClientCreate = Omit<Client, 'id' | 'createdAt' | 'updatedAt' | 'country' | 'ratePlan'> & {
+  country: Pick<Country, 'iso2'>
+  ratePlan?: Pick<RatePlan, 'id'>;
+};
 export type ClientUpdate = Partial<Client>;
 
 export function isClient(data: unknown): data is Client {
   return data !== null
     && typeof data === 'object'
     && 'id' in data
-    && 'type' in data
-    && typeof data.type === 'string'
-    && Object.values<string>(ClientType).includes(data.type)
-    && 'name' in data;
+    && 'name' in data
+    && 'country' in data;
 }

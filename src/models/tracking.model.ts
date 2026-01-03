@@ -1,21 +1,19 @@
-import { RateDetail } from "./rates.model";
+import { BaseContentEntity, Moodable } from "./common.model";
+import { RateVersion } from "./rates.model";
 import { Task } from "./tasks.model";
 
-export interface Tracking {
-  id: number;
+export interface Tracking extends BaseContentEntity, Moodable {
   task: Task;
   date: string;
   note?: string;
-  hours: number;
-  rate: RateDetail;
+  amount: number;
+  rateVersion: RateVersion;
 }
 
-export interface TrackingCreate {
-  task: Task;
-  date: string;
-  hours: number;
-  note?: string;
-}
+export type TrackingCreate = Omit<Tracking, 'id' | 'createdAt' | 'updatedAt'> & {
+  task: Pick<Task, 'id'>;
+  // rateVersion: Pick<RateVersion, 'id'>;
+};
 
 export type TrackingUpdate = Partial<Tracking> & Pick<Tracking, 'id'>;
 
@@ -25,7 +23,8 @@ export function isTracking(data: unknown): data is Tracking {
     && 'id' in data
     && 'task' in data
     && 'date' in data
-    && 'hours' in data;
+    && 'amount' in data
+    && 'rateVersion' in data;
 }
 
 export interface TrackingDateFilter {

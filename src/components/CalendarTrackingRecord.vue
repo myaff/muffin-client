@@ -39,13 +39,13 @@ const classes = computed(() => ({
 }))
 const money = computed(() => {
   return props.record.tracking
-    .filter(item => item.rate && item.rate.type === RateType.HOURLY)
+    .filter(item => item.rateVersion && item.rateVersion.ratePlan.type === RateType.HOURLY)
     .reduce((acc, item) => {
-      const currency = item.rate.currency.id;
-      if (!(currency in acc)) acc[currency] = { value: 0, currency };
-      acc[currency].value += item.hours * item.rate.value;
+      const currency = item.rateVersion.ratePlan.currency.id;
+      if (!(currency in acc)) acc[currency] = { amount: 0, currency };
+      acc[currency].amount += item.amount * item.rateVersion.amount;
       return acc;
-    }, {} as { [key: string]: { value: number, currency: string } })
+    }, {} as { [key: string]: { amount: number, currency: string } })
 })
 </script>
 
@@ -61,16 +61,9 @@ const money = computed(() => {
         <div v-for="(item, key) in money"
           :key="key"
           class="calendar-tracking-record__money-item">
-          {{ n(item.value, { key: 'currency', currency: item.currency }) }}
+          {{ n(item.amount, { key: 'currency', currency: item.currency }) }}
         </div>
       </div>
     </v-tooltip>
   </div>
 </template>
-
-<style lang="scss" scoped>
-.calendar-tracking-record {
-  &__hours {
-  }
-}
-</style>
