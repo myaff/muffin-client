@@ -81,6 +81,7 @@ const cancel = () => {
           :show-task="showTask"
           @change="data => onRowChange(data, i)">
           <template #actions>
+            <v-btn icon="mdi-emoticon-plus-outline" />
             <v-btn v-if="i === formData.length - 1" icon="mdi-plus" variant="plain" size="small" @click="addColumn" />
             <v-btn v-else icon="mdi-delete" color="error" variant="plain" size="small" @click="removeColumn(i)" />
           </template>

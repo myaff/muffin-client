@@ -33,7 +33,7 @@ const trackingByDay = computed(() => {
       };
     }
     acc[date].amount += item.amount;
-    if (item.rateVersion && isHourlyRate) {
+    if (item.rateVersion?.amount && isHourlyRate) {
       acc[date].subtotal += item.amount * item.rateVersion.amount;
       acc[date].subtotalFormatted = n(acc[date].subtotal, getCurrencyOptions(item.rateVersion));
     }
@@ -65,7 +65,7 @@ const tableData = computed(() => {
     }
     acc[key].amount += day.amount;
     acc[key].tracking.push(day);
-    if (day.rate && isHourlyRate) {
+    if (day.rate?.amount && isHourlyRate) {
       acc[key].subtotal += day.amount * day.rate.amount;
       acc[key].subtotalFormatted = n(acc[key].subtotal, getCurrencyOptions(day.rate));
     }
