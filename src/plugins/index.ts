@@ -18,6 +18,7 @@ import i18n from '../i18n';
 import DateFnsAdapter from '@date-io/date-fns';
 import enUS from 'date-fns/locale/en-US';
 import ru from 'date-fns/locale/ru';
+import 'swiper/css';
 
 const vuetify = createVuetify({
   locale: {

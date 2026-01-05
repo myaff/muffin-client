@@ -1,21 +1,21 @@
-import { Project, ProjectCreate, ProjectDetail, ProjectUpdate } from "@/models/projects.model";
-import { ProjectsService } from "@/services/projects.service";
+import { BankAccount, BankAccountCreate, BankAccountUpdate } from "@/models/bankAccount.model";
+import { BankAccountService } from "@/services/bankAccount.service";
 import { defineStore } from "pinia";
-import { onMounted, watch } from "vue";
 import { useUserStore } from "./user";
+import { onMounted, watch } from "vue";
 import useListStore from "@/composables/useListStore";
 import useEntityStore from "@/composables/useEntityStore";
 
-export const useProjectsStore = defineStore('projects', () => {
-  const service = new ProjectsService();
+export const useBankAccountsStore = defineStore('bankAccounts', () => {
+  const service = new BankAccountService();
   const userStore = useUserStore();
-  const { list, isLoading, fetchList } = useListStore<Project>(service);
+  const { list, isLoading, fetchList } = useListStore<BankAccount>(service);
   const {
     detailsMap,
     getDetail,
     create,
     update,
-  } = useEntityStore<Project, ProjectCreate, ProjectUpdate, ProjectDetail>(service, fetchList);
+  } = useEntityStore<BankAccount, BankAccountCreate, BankAccountUpdate>(service, fetchList);
 
   watch(() => userStore.accessToken, value => {
     if (!value) {
@@ -37,4 +37,4 @@ export const useProjectsStore = defineStore('projects', () => {
     create,
     update,
   };
-});
+})

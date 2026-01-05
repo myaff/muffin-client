@@ -235,8 +235,35 @@ export default {
     active: 'Активные',
     notActive: 'Архивные',
   },
-  money: {
-    title: 'Деньги',
+  bank: {
+    title: 'Банк',
+    fields: {
+      bic: 'БИК',
+      name: 'Наименование',
+      country: 'Страна',
+      registeredAddress: 'Адрес регистрации',
+      operationalAddress: 'Фактический адрес',
+      branchDescription: 'Опсиание филиала',
+      branchAddress: 'Адрес филиала',
+      instType: 'Тип организации',
+    },
+  },
+  bankAccount: {
+    title: 'Бансковский счёт',
+    item: 'Бансковский счёт',
+    items: 'Бансковские счета',
+    create: 'Добавить счёт',
+    update: 'Редактировать счёт',
+    fields: {
+      bank: 'Банк',
+      name: 'Название',
+      startingBalance: 'Стартовый баланс',
+      balance: 'Баланс',
+      country: 'Страна',
+      currency: 'Валюта',
+    },
+    active: 'Активный',
+    notActive: 'Архив',
   },
   date: {
     title: 'Дата',

@@ -2,8 +2,8 @@
 import { UiAlert, UiTableHeaderCell } from '@/models/ui.model';
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import TrackingCreateForm from '@/components/TrackingCreateMultiple.vue';
-import TrackingSummary from '@/components/TrackingSummary.vue';
+import TrackingCreateForm from '@/components/tracking/TrackingCreateMultiple.vue';
+import TrackingSummary from '@/components/tracking/TrackingSummary.vue';
 import { useTrackingStore } from '@/store/tracking';
 import { Tracking, TrackingCreate, TrackingFilter } from '@/models/tracking.model';
 import { format } from 'date-fns';

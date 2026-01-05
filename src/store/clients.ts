@@ -1,70 +1,37 @@
 import { Client, ClientCreate, ClientUpdate } from "@/models/clients.model";
 import { ClientsService } from "@/services/clients.service";
 import { defineStore } from "pinia";
-import { onMounted, ref, watch, reactive } from "vue";
+import { onMounted, watch } from "vue";
 import { useUserStore } from "./user";
+import useListStore from "@/composables/useListStore";
+import useEntityStore from "@/composables/useEntityStore";
 
 export const useClientsStore = defineStore('clients', () => {
   const service = new ClientsService();
-  const list = ref<Client[]>([]);
-  const isLoading = ref(false);
-  const detailsMap = reactive<Map<Client['id'], Client>>(new Map());
+  const { list, isLoading, fetchList } = useListStore<Client>(service);
+  const {
+    detailsMap,
+    getDetail,
+    create,
+    update,
+  } = useEntityStore<Client, ClientCreate, ClientUpdate>(service, fetchList);
   const userStore = useUserStore();
 
   watch(() => userStore.accessToken, value => {
-    if (!value) list.value = [];
+    if (!value) {
+      list.value = [];
+      detailsMap.value.clear();
+    }
   })
 
   onMounted(() => {
     if (!list.value.length && !isLoading.value) fetchList();
   })
 
-  function fetchList() {
-    isLoading.value = true;
-    return service.findAll()
-      .then(data => {
-        if (data.length) list.value = data;
-      })
-      .finally(() => isLoading.value = false);
-  }
-
-  function fetchDetail(id: number) {
-    return service.findOne(id).then(data => {
-      if (data) detailsMap.set(id, data);
-      return data;
-    });
-  }
-
-  function getDetail(id: Client['id']) {
-    if (detailsMap.has(id)) {
-      return Promise
-        .resolve(detailsMap.get(id) as Client)
-        .then(() => fetchDetail(id));
-    }
-    return fetchDetail(id);
-  }
-
-  function create(formData: ClientCreate) {
-    return service.create(formData)
-      .then(data => {
-        fetchList();
-        return data;
-      });
-  }
-
-  function update(id: number, formData: ClientUpdate) {
-    return service.update(id, formData)
-      .then(data => {
-        if (data) detailsMap.set(id, data);
-        return data;
-      });
-  }
-
   return {
     list,
     isLoading,
     fetchList,
-    fetchDetail,
     detailsMap,
     getDetail,
     create,

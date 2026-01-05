@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useVuelidate } from '@vuelidate/core';
 import { useTasksStore } from '@/store/tasks';
 import { Task } from '@/models/tasks.model';
-import TrackingCreateRow from './TrackingCreateRow.vue';
+import TrackingCreateRow from '@/components/tracking/TrackingCreateRow.vue';
 
 const props = defineProps({
   task: {

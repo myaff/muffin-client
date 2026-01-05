@@ -12,12 +12,12 @@ const routes = [
       {
         path: '',
         name: 'signin',
-        component: () => import('@/views/SignIn.vue'),
+        component: () => import('@/views/auth/signIn.vue'),
       },
       {
         path: '/signup',
         name: 'signup',
-        component: () => import('@/views/SignUp.vue'),
+        component: () => import('@/views/auth/signUp.vue'),
       },
     ],
   },
@@ -29,7 +29,7 @@ const routes = [
       {
         path: '',
         name: 'home',
-        component: () => import('@/views/Home.vue'),
+        component: () => import('@/views/home.vue'),
         meta: {
           nav: {
             key: 'home',
@@ -40,7 +40,7 @@ const routes = [
       {
         path: 'clients',
         name: 'clients',
-        component: () => import('@/views/Clients.vue'),
+        component: () => import('@/views/clients/index.vue'),
         meta: {
           nav: {
             key: 'clients',
@@ -51,14 +51,14 @@ const routes = [
           {
             path: ':id',
             name: 'client',
-            component: () => import('@/views/ClientDetail.vue'),
+            component: () => import('@/views/clients/detail.vue'),
           },
         ],
       },
       {
         path: 'projects',
         name: 'projects',
-        component: () => import('@/views/Projects.vue'),
+        component: () => import('@/views/projects/index.vue'),
         meta: {
           nav: {
             key: 'projects',
@@ -69,14 +69,14 @@ const routes = [
           {
             path: ':id',
             name: 'project',
-            component: () => import('@/views/ProjectDetail.vue'),
+            component: () => import('@/views/projects/detail.vue'),
           },
         ],
       },
       {
         path: 'tasks',
         name: 'tasks',
-        component: () => import('@/views/Tasks.vue'),
+        component: () => import('@/views/tasks/index.vue'),
         meta: {
           nav: {
             key: 'tasks',
@@ -87,7 +87,7 @@ const routes = [
           {
             path: ':id',
             name: 'task',
-            component: () => import('@/views/TaskDetail.vue'),
+            component: () => import('@/views/tasks/detail.vue'),
           },
         ],
       },
@@ -105,7 +105,7 @@ const routes = [
           {
             path: 'calendar',
             name: 'trackingCalendar',
-            component: () => import('@/views/TrackingCalendar.vue'),
+            component: () => import('@/views/tracking/calendar.vue'),
             meta: {
               tab: {
                 key: 'trackingCalendar',
@@ -116,7 +116,7 @@ const routes = [
           {
             path: 'table',
             name: 'trackingTable',
-            component: () => import('@/views/TrackingTable.vue'),
+            component: () => import('@/views/tracking/table.vue'),
             meta: {
               tab: {
                 key: 'trackingTable',
@@ -125,6 +125,17 @@ const routes = [
             },
           },
         ],
+      },
+      {
+        path: 'finance',
+        name: 'finance',
+        component: () => import('@/views/finance/index.vue'),
+        meta: {
+          nav: {
+            key: 'finance',
+            icon: 'mdi-cash-multiple',
+          },
+        },
       },
     ],
   },

@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { reactive, ref, Ref } from 'vue';
+import { reactive, ref, Ref, watch } from 'vue';
 import { useVuelidate } from '@vuelidate/core';
 import { required, email, minLength } from '@vuelidate/validators';
 import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@/store/user';
 import { useRouter } from 'vue-router';
 import { UiAlert } from '@/models/ui.model';
-import { watch } from 'vue';
 const { t, te } = useI18n();
 
 const userStore = useUserStore();
@@ -61,7 +60,7 @@ const submit = async () => {
         type="email"
         class="mb-4"
         @blur="$v.email.$touch" />
-      <v-text-field 
+      <v-text-field
         v-model="formData.password"
         :label="t('form.password.label')"
         required
@@ -71,7 +70,7 @@ const submit = async () => {
         @blur="$v.password.$touch" />
     </v-form>
     <v-btn
-      size="x-large" 
+      size="x-large"
       color="primary"
       :loading="isLoading"
       @click="submit">

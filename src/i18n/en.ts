@@ -235,8 +235,35 @@ export default {
     active: 'Active',
     notActive: 'Archive',
   },
-  money: {
-    title: 'Money',
+  bank: {
+    title: 'Bank',
+    fields: {
+      bic: 'BIC',
+      name: 'Name',
+      country: 'Country',
+      registeredAddress: 'Registered address',
+      operationalAddress: 'Operational address',
+      branchDescription: 'Branch description',
+      branchAddress: 'Branch address',
+      instType: 'Institution type',
+    },
+  },
+  bankAccount: {
+    title: 'Bank account',
+    item: 'Bank account',
+    items: 'Bank accounts',
+    create: 'Add bank account',
+    update: 'Edit bank account',
+    fields: {
+      bank: 'Bank',
+      name: 'Name',
+      startingBalance: 'Starting balance',
+      balance: 'Balance',
+      country: 'Country',
+      currency: 'Currency',
+    },
+    active: 'Active',
+    notActive: 'Archive',
   },
   date: {
     title: 'Date',

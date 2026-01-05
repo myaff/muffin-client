@@ -4,7 +4,7 @@ import { type PropType, computed, ref } from 'vue';
 import { format } from 'date-fns';
 import { type Tracking } from '@/models/tracking.model';
 import { RateType, RateVersion } from '@/models/rates.model';
-import TrackingSummary from '@/components/TrackingSummary.vue';
+import TrackingSummary from '@/components/tracking/TrackingSummary.vue';
 const { t, n, d } = useI18n();
 const props = defineProps({
   tracking: {
