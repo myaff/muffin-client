@@ -4,6 +4,7 @@ import { computed, onMounted, PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 import WidgetBank from '@/components/finance/WidgetBank.vue';
 import { useBankAccountsStore } from '@/store/bankAccounts';
+import WidgetLastTransactions from '../WidgetLastTransactions.vue';
 
 const props = defineProps({
   item: {
@@ -25,7 +26,7 @@ onMounted(async () => await bankAccountsStore.getDetail(props.item.id))
   <v-card>
     <v-card-item>
       <v-row class="align-center pr-8">
-        <v-col cols="12" md="8">
+        <v-col cols="12" md="7">
           <div class="d-flex align-center">
             <h1 class="text-h4">{{ final.name }}</h1>
             <v-btn icon="mdi-pencil" class="ml-3" @click="emits('edit', item)" />
@@ -34,8 +35,8 @@ onMounted(async () => await bankAccountsStore.getDetail(props.item.id))
             {{ final.currency.id + ' - ' + final.currency.name }}
           </p>
         </v-col>
-        <v-col cols="12" md="4">
-          <div class="text-h3 text-md-right">
+        <v-col cols="12" md="5">
+          <div class="text-h5 text-sm-h4 text-md-right">
             {{ n(final.balance, { key: 'currency', currency: final.currency.id }) }}
           </div>
         </v-col>
@@ -45,6 +46,9 @@ onMounted(async () => await bankAccountsStore.getDetail(props.item.id))
       <v-row>
         <v-col cols="12" md="6">
           <widget-bank v-if="final?.bank" :bank="final.bank" />
+        </v-col>
+        <v-col cols="12" md="6">
+          <widget-last-transactions :filter="{ bankAccountId: final.id }" />
         </v-col>
       </v-row>
     </v-card-item>

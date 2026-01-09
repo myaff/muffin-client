@@ -2,11 +2,12 @@ import { ApiService } from "./api.service";
 import { AxiosError } from "axios";
 import { EntityService, ListService } from "@/models/service.model";
 import { Task, TaskCreate, TaskDetail, TaskUpdate } from "@/models/tasks.model";
+import { PaginatableList } from "@/models/common.model";
 
 export class TaskService extends ApiService implements ListService<Task>, EntityService<Task, TaskCreate, TaskUpdate, TaskDetail> {
   resource = '/task';
   create(formData: TaskCreate) {
-    return TaskService.api.post<Task>(this.resource, formData)
+    return TaskService.api.post<TaskDetail>(this.resource, formData)
       .then(res => res.data)
       .catch((error: AxiosError) => {
         throw { title: error.code, message: error.message };
@@ -34,7 +35,7 @@ export class TaskService extends ApiService implements ListService<Task>, Entity
 
   findAll() {
     return TaskService.api
-      .get<Task[]>(this.resource)
+      .get<PaginatableList<Task>>(this.resource)
       .then(res => res.data)
       .catch((error: AxiosError) => {
         throw { title: error.code, message: error.message };

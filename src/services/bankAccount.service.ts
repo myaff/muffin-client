@@ -2,6 +2,7 @@ import { EntityService, ListService } from "@/models/service.model";
 import { ApiService } from "./api.service";
 import { BankAccount, BankAccountCreate, BankAccountUpdate } from "@/models/bankAccount.model";
 import { AxiosError } from "axios";
+import { PaginatableList } from "@/models/common.model";
 
 export class BankAccountService
   extends ApiService
@@ -37,7 +38,7 @@ export class BankAccountService
 
   findAll() {
     return BankAccountService.api
-      .get<BankAccount[]>(this.resource)
+      .get<PaginatableList<BankAccount>>(this.resource)
       .then(res => res.data)
       .catch((error: AxiosError) => {
         throw { title: error.code, message: error.message };

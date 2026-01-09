@@ -2,6 +2,7 @@ import { Client, ClientCreate, ClientUpdate } from "@/models/clients.model";
 import { ApiService } from "./api.service";
 import { AxiosError } from "axios";
 import { EntityService, ListService } from "@/models/service.model";
+import { PaginatableList } from "@/models/common.model";
 
 export class ClientsService extends ApiService implements ListService<Client>, EntityService<Client, ClientCreate, ClientUpdate> {
   resource = '/client';
@@ -34,7 +35,7 @@ export class ClientsService extends ApiService implements ListService<Client>, E
 
   findAll() {
     return ClientsService.api
-      .get<Client[]>(this.resource)
+      .get<PaginatableList<Client>>(this.resource)
       .then(res => res.data)
       .catch((error: AxiosError) => {
         throw { title: error.code, message: error.message };

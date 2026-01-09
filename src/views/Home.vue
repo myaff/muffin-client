@@ -1,7 +1,9 @@
-<template>
-  <HelloWorld />
-</template>
-
 <script lang="ts" setup>
-  import HelloWorld from '@/components/HelloWorld.vue'
+import WidgetFinanceSummary from '@/components/WidgetFinanceSummary.vue';
 </script>
+
+<template>
+  <div class="page w-100 align-center justify-center">
+    <WidgetFinanceSummary />
+  </div>
+</template>

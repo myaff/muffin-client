@@ -129,13 +129,34 @@ const routes = [
       {
         path: 'finance',
         name: 'finance',
-        component: () => import('@/views/finance/index.vue'),
+        redirect: { name: 'financeDashboard' },
         meta: {
           nav: {
             key: 'finance',
             icon: 'mdi-cash-multiple',
           },
         },
+        children: [{
+          path: '',
+          name: 'financeDashboard',
+          component: () => import('@/views/finance/index.vue'),
+          meta: {
+            tab: {
+              key: 'financeDashboard',
+              icon: 'mdi-cash-multiple',
+            },
+          },
+        },{
+          path: 'transactions',
+          name: 'financeTransactions',
+          component: () => import('@/views/finance/transactions.vue'),
+          meta: {
+            tab: {
+              key: 'financeTransactions',
+              icon: 'mdi-table',
+            },
+          },
+        }],
       },
     ],
   },

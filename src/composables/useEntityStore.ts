@@ -25,6 +25,7 @@ export default function useEntityStore<T extends BaseContentEntity, C = T, U = C
   function create(formData: C) {
     return service.create(formData)
       .then(data => {
+        if (data) detailsMap.value.set(data.id, data);
         onUpdate();
         return data;
       });
@@ -39,10 +40,21 @@ export default function useEntityStore<T extends BaseContentEntity, C = T, U = C
       });
   }
 
+  function remove(id: T['id']) {
+    return service.delete(id)
+      .then(data => {
+        detailsMap.value.delete(id);
+        onUpdate();
+        return data;
+      })
+  }
+
   return {
     detailsMap,
     getDetail,
     create,
     update,
+    remove,
   }
 }
+export type EntityStore<T extends BaseContentEntity, C = T, U = C, D extends BaseContentEntity = T> = ReturnType<typeof useEntityStore<T, C, U, D>>;

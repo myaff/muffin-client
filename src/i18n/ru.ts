@@ -75,6 +75,8 @@ export default {
     trackingTable: 'Таблица',
     trackingCalendar: 'Календарь',
     finance: 'Финансы',
+    financeDashboard: 'Панель',
+    financeTransactions: 'Транзакции',
   },
   clients: {
     item: 'Клиент',
@@ -265,6 +267,45 @@ export default {
     active: 'Активный',
     notActive: 'Архив',
   },
+  transaction: {
+    item: 'Транзакция',
+    items: 'Транзакции',
+    create: 'Добавить транзакцию',
+    update: 'Релактировать транзакцию',
+    last: 'Последние транзакции',
+    empty: 'Транзакций не найдено',
+    fields: {
+      client: 'Клиент',
+      invoice: 'Счет на оплату',
+      bankAccount: 'Банковский счет',
+      date: 'Дата',
+      amount: 'Сумма',
+      type: 'Тип',
+      note: 'Заметка',
+      category: 'Категория',
+    },
+  },
+  transactionCategory: {
+    item: 'Категория',
+    items: 'Категории',
+    create: 'Добавить категорию',
+    update: 'Редактировать категорию',
+    fields: {
+      name: 'Название',
+      income: 'Доход',
+      expense: 'Расход',
+    },
+    uncategorized: 'Без категории',
+  },
+  finance: {
+    income: 'Приход',
+    outcome: 'Расход',
+    all: 'Все',
+  },
+  deletion: {
+    title: 'Вы уверены?',
+    text: 'Удаление нельзя будет отменить',
+  },
   date: {
     title: 'Дата',
     range: 'Период',
@@ -276,6 +317,8 @@ export default {
     createdAt: 'Создано',
     updatedAt: 'Обновлено',
     undefined: 'Не задана',
+    from: 'С',
+    to: 'По',
   },
   priority: {
     title: 'Приоритет',

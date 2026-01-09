@@ -22,7 +22,7 @@ const { n } = useI18n();
         </template>
       </v-card-item>
       <v-card-item>
-        <div class="text-h4">
+        <div class="text-h5">
           {{ n(item.balance, { key: 'currency', currency: item.currency.id }) }}
         </div>
       </v-card-item>

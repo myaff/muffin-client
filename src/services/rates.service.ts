@@ -1,13 +1,14 @@
 import { ApiService } from "./api.service";
 import { AxiosError } from "axios";
 import { EntityService, ListService } from "@/models/service.model";
-import { RateDetail, RateCreate, RateUpdate } from "@/models/rates.model";
+import { RateDetail, RateCreate, RateUpdate, Rate } from "@/models/rates.model";
+import { PaginatableList } from "@/models/common.model";
 
 export class RatesService extends ApiService implements ListService<RateDetail>, EntityService<RateDetail, RateCreate, RateUpdate> {
   resource = '/rate';
   create(formData: RateCreate) {
-    const prepared = { 
-      ...formData, 
+    const prepared = {
+      ...formData,
       dateFrom: this.formatDate(formData.dateFrom),
       dateTo: formData.dateTo ? this.formatDate(formData.dateTo) : null,
     };
@@ -20,7 +21,7 @@ export class RatesService extends ApiService implements ListService<RateDetail>,
 
   update(id: string | number, formData: RateUpdate) {
     return RatesService.api
-      .patch(`${this.resource}/${id}`, formData);
+      .patch<RateDetail>(`${this.resource}/${id}`, formData);
   }
 
   delete(id: string | number) {
@@ -38,7 +39,7 @@ export class RatesService extends ApiService implements ListService<RateDetail>,
 
   findAll() {
     return RatesService.api
-      .get<RateDetail[]>(this.resource)
+      .get<PaginatableList<RateDetail>>(this.resource)
       .then(res => res.data)
       .catch((error: AxiosError) => {
         throw { title: error.code, message: error.message };

@@ -3,7 +3,7 @@ import { ApiService } from "./api.service";
 import { AxiosError } from "axios";
 import { Status, StatusCreate, StatusUpdate } from "@/models/status.model";
 
-export class StatusService extends ApiService implements ListService<Status>, EntityService<Status, StatusCreate, StatusUpdate> {
+export class StatusService extends ApiService implements EntityService<Status, StatusCreate, StatusUpdate> {
   resource = '/status';
   create(formData: StatusCreate) {
     return StatusService.api.post<Status>(this.resource, formData)

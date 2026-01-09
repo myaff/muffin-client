@@ -75,6 +75,8 @@ export default {
     trackingTable: 'Table',
     trackingCalendar: 'Calendar',
     finance: 'Finance',
+    financeDashboard: 'Dashboard',
+    financeTransactions: 'Transactions',
   },
   clients: {
     item: 'Client',
@@ -265,6 +267,45 @@ export default {
     active: 'Active',
     notActive: 'Archive',
   },
+  transaction: {
+    item: 'Transaction',
+    items: 'Trannsactions',
+    create: 'Add transaction',
+    update: 'Edit transaction',
+    last: 'Last transactions',
+    empty: 'No transactions found',
+    fields: {
+      client: 'Client',
+      invoice: 'Invoice',
+      bankAccount: 'Bank account',
+      date: 'Date',
+      amount: 'Amount',
+      type: 'Type',
+      note: 'Note',
+      category: 'Category',
+    },
+  },
+  transactionCategory: {
+    item: 'Category',
+    items: 'Categories',
+    create: 'Add category',
+    update: 'Edit category',
+    fields: {
+      name: 'Name',
+      income: 'Income',
+      expense: 'Expense',
+    },
+    uncategorized: 'Uncategorized',
+  },
+  finance: {
+    income: 'Income',
+    outcome: 'Outcome',
+    all: 'All',
+  },
+  deletion: {
+    title: 'Are you sure?',
+    text: 'Deletion can\'t be undone',
+  },
   date: {
     title: 'Date',
     range: 'Range',
@@ -276,6 +317,8 @@ export default {
     createdAt: 'Created',
     updatedAt: 'Updated',
     undefined: 'Undefined',
+    from: 'From',
+    to: 'To',
   },
   priority: {
     title: 'Priority',
