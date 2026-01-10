@@ -2,11 +2,11 @@
 import { UiAlert } from '@/models/ui.model';
 import { ref, computed, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import TrackingCreateForm from '@/components/TrackingCreateMultiple.vue';
+import TrackingCreateForm from '@/components/tracking/TrackingCreateMultiple.vue';
 import CalendarMonth from '@/components/CalendarMonth.vue';
-import CalendarTrackingRecord from '@/components/CalendarTrackingRecord.vue';
-import TrackingCalendarDay from '../components/TrackingCalendarDay.vue';
-import TrackingSummary from '@/components/TrackingSummary.vue';
+import CalendarTrackingRecord from '@/components/tracking/CalendarTrackingRecord.vue';
+import TrackingCalendarDay from '@/components/tracking/TrackingCalendarDay.vue';
+import TrackingSummary from '@/components/tracking/TrackingSummary.vue';
 import { useTrackingStore } from '@/store/tracking';
 import { TrackingCreate, TrackingDay, TrackingFilter } from '@/models/tracking.model';
 import { endOfMonth, format, isValid, parseISO, startOfMonth } from 'date-fns';

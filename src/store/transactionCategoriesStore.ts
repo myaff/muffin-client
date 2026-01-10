@@ -1,21 +1,22 @@
-import { Project, ProjectCreate, ProjectDetail, ProjectUpdate } from "@/models/projects.model";
-import { ProjectsService } from "@/services/projects.service";
 import { defineStore } from "pinia";
-import { onMounted, watch } from "vue";
 import { useUserStore } from "./user";
+import { onMounted, watch } from "vue";
 import useListStore from "@/composables/useListStore";
 import useEntityStore from "@/composables/useEntityStore";
+import { TransactionCategory, TransactionCategoryCreate, TransactionCategoryUpdate } from "@/models/transaction.model";
+import { TransactionCategoryService } from "@/services/transactionCategories.service";
 
-export const useProjectsStore = defineStore('projects', () => {
-  const service = new ProjectsService();
+export const useTransactionsCategorieStore = defineStore('transactionCategories', () => {
+  const service = new TransactionCategoryService();
   const userStore = useUserStore();
-  const { list, isLoading, fetchList } = useListStore<Project>(service);
+  const { list, isLoading, fetchList } = useListStore<TransactionCategory>(service);
   const {
     detailsMap,
     getDetail,
     create,
     update,
-  } = useEntityStore<Project, ProjectCreate, ProjectUpdate, ProjectDetail>(service, fetchList);
+    remove,
+  } = useEntityStore<TransactionCategory, TransactionCategoryCreate, TransactionCategoryUpdate>(service, fetchList);
 
   watch(() => userStore.accessToken, value => {
     if (!value) {
@@ -36,5 +37,6 @@ export const useProjectsStore = defineStore('projects', () => {
     getDetail,
     create,
     update,
+    remove,
   };
-});
+})

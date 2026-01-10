@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { reactive, ref, computed } from 'vue';
 import { ServerErrors, useVuelidate } from '@vuelidate/core';
 import { required, email, minLength } from '@vuelidate/validators';
 import { useI18n } from 'vue-i18n';
@@ -8,7 +8,6 @@ import { useRouter } from 'vue-router';
 import { ResponseError } from '@/models/common.model';
 import { AvailableLocales } from '@/i18n';
 import { useAppStore } from '@/store/app';
-import { computed } from 'vue';
 const { t, te, locale } = useI18n();
 const appStore = useAppStore();
 const userStore = useUserStore();
@@ -103,7 +102,7 @@ const submit = async () => {
         type="email"
         name="email"
         class="mb-4" />
-      <v-text-field 
+      <v-text-field
         v-model="$v.password.$model"
         :label="t('form.password.label')"
         required
@@ -121,7 +120,7 @@ const submit = async () => {
         :error-messages="$v.currency.$errors.map(e => e.$message as string)" />
     </v-form>
     <v-btn
-      size="x-large" 
+      size="x-large"
       color="primary"
       :loading="isLoading"
       @click="submit">

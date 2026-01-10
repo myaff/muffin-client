@@ -1,19 +1,36 @@
 export interface PaginationParams {
-  skip: number;
-  take: number;
+  page?: number;
+  pageSize?: number;
 }
 
+export type FilterParamValue = string | number | boolean;
 export interface FilterParams {
-  query: string;
-  [key: string]: string | number | (string | number)[];
+  [key: string]: FilterParamValue | FilterParamValue[];
 }
 
+export enum SortOrder {
+  ASC = 'asc',
+  DESC = 'desc',
+}
 export interface SortParams {
   sortBy: string;
-  order: 'asc' | 'desc';
+  order: SortOrder;
+}
+
+export interface Paginatable {
+  page: number;
+  pageSize: number;
+  pagesCount: number;
+  totalCount: number;
+  hasNext: boolean;
+  hasPrev: boolean;
 }
 
 export type FetchListParams = Partial<PaginationParams & FilterParams & SortParams>;
+
+export interface PaginatableList<T extends BaseContentEntity> extends Paginatable {
+  list: T[];
+}
 
 export interface ValidationError {
   property: string;

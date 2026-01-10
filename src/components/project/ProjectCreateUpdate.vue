@@ -7,7 +7,7 @@ import { useRatesStore } from '@/store/rates';
 import { useClientsStore } from '@/store/clients';
 import { UiAlert } from '@/models/ui.model';
 import { RateCreate } from '@/models/rates.model';
-import RateCreateForm from './RateCreate.vue';
+import RateCreateForm from '@/components/RateCreate.vue';
 import useError from '@/composables/useError';
 import useRate from '@/composables/useRate';
 import { Project, ProjectCreate } from '@/models/projects.model';

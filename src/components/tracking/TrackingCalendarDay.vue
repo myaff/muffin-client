@@ -9,8 +9,7 @@ import { Task } from '@/models/tasks.model';
 import { endOfDay, endOfMonth, formatISO, startOfDay, startOfMonth } from 'date-fns';
 import { useTrackingStore } from '@/store/tracking';
 import useError from '@/composables/useError';
-import router from '@/router';
-import TrackingSummary from '@/components/TrackingSummary.vue';
+import TrackingSummary from '@/components/tracking/TrackingSummary.vue';
 import { getRateVersionByDate } from '@/helpers/rate.helper';
 
 const { t, d, n } = useI18n();

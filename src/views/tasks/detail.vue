@@ -7,7 +7,7 @@ import { computed, Ref, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { StatusGroupColor } from '@/models/status.model';
-import TaskDetailTracking from '@/components/TaskDetailTracking.vue';
+import TaskDetailTracking from '@/components/task/TaskDetailTracking.vue';
 import { RatePlan, RatePlanWithVersions } from '@/models/rates.model';
 import WidgetDates from '@/components/WidgetDates.vue';
 import { getQueryParamValue } from '@/helpers/url.helper';
