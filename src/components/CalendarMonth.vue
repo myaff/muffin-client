@@ -40,9 +40,10 @@ const weeks = computed(() => {
   });
   return days.reduce((acc, day) => {
     const week = getWeek(day, { weekStartsOn: props.weekStartsOn });
-    if (!acc[week]) acc[week] = [];
+    if (!acc.has(week)) acc.set(week, []);
     const isCurMonth = isSameMonth(props.modelValue, day);
-    acc[week].push({
+    const weekDays = acc.get(week) as DayView[];
+    weekDays.push({
       date: day,
       isCurrentMonth: isCurMonth,
       isPrevMonth: !isCurMonth && isSameMonth(subMonths(props.modelValue, 1), day),
@@ -51,7 +52,7 @@ const weeks = computed(() => {
       isWeekend: isWeekend(day),
     });
     return acc;
-  }, {} as { [key: number]: DayView[] })
+  }, new Map<number, DayView[]>());
 })
 const months = computed(() => {
   return eachMonthOfInterval({
@@ -117,7 +118,7 @@ function setYearValue(value: string) {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(week, key) in weeks" :key="key" class="calendar-month__table-row">
+        <tr v-for="[key, week] in weeks" :key="key" class="calendar-month__table-row">
           <td v-for="day in week" :key="day.date.toISOString()" :class="{
             ['prev-month']: day.isPrevMonth,
             ['cur-month']: day.isCurrentMonth,
