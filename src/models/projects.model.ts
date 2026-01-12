@@ -1,6 +1,6 @@
 import { Client } from "./clients.model";
 import { BaseContentEntity, Deliverable, Estimatable, Moodable } from "./common.model";
-import { RateDetail, RatePlan } from "./rates.model";
+import { RateDetail, RatePlan, RatePlanFull } from "./rates.model";
 import { Task, TaskDetail } from "./tasks.model";
 import { Tracking } from "./tracking.model";
 
@@ -10,7 +10,7 @@ export interface Project extends BaseContentEntity, Estimatable, Moodable, Deliv
   client: Client;
   url: string | null;
   rates?: RateDetail[];
-  ratePlan: RatePlan | null;
+  ratePlan: RatePlanFull | null;
   tasks?: Task[];
   code: string;
   description: string | null;

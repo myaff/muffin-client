@@ -129,7 +129,7 @@ const infoList = computed(() => {
       <v-card-item>
         <v-row>
           <v-col cols="12" md="8">
-            <WidgetInfo :list="infoList" />
+            <WidgetInfo :list="infoList" title-width="180" />
           </v-col>
           <v-col cols="12" md="4">
             <WidgetDates :entity="client" />

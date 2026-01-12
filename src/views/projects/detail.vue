@@ -17,6 +17,8 @@ import { getQueryParamValue } from '@/helpers/url.helper';
 import { isNumber } from 'lodash-es';
 import WidgetDates from '@/components/WidgetDates.vue';
 import WidgetEstimate from '@/components/WidgetEstimate.vue';
+import RatePlan from '@/components/rate/RatePlan.vue';
+import RatePlanMini from '@/components/rate/RatePlanMini.vue';
 
 const emits = defineEmits(['edit']);
 const { d, n, t } = useI18n();
@@ -120,6 +122,11 @@ function fetch(id: number) {
 
 // rates
 const ratesStore = useRatesStore();
+const ratePlan = computed(() => {
+  if (!project.value) return null;
+  if (project.value?.ratePlan) return project.value.ratePlan;
+  return ratesStore.getRateForProject(project.value);
+})
 const addingIsSending = ref(false);
 const addingIsOpen = ref(false);
 const addingError = ref<UiAlert | null>(null);
@@ -149,14 +156,14 @@ const creationIsOpen = ref(false);
 const createRate = (formData: RateCreate) => {
   creationIsSending.value = true;
   const currentProject = project.value as Project;
-  ratesStore
-    .create({ ...formData, projects: [{ id: currentProject.id }] })
-    .then(() => {
-      fetch(currentProject.id);
-      creationIsOpen.value = false;
-    })
-    .catch(e => creationError.value = useError(e, t))
-    .finally(() => creationIsSending.value = false);
+  // ratesStore
+  //   .create({ ...formData })
+  //   .then(() => {
+  //     fetch(currentProject.id);
+  //     creationIsOpen.value = false;
+  //   })
+  //   .catch(e => creationError.value = useError(e, t))
+  //   .finally(() => creationIsSending.value = false);
 }
 const openCreation = () => {
   creationError.value = null;
@@ -228,6 +235,7 @@ const openCreation = () => {
             <v-btn prepend-icon="mdi-pencil" class="ml-auto" @click="emits('edit', project)">
               {{ t('btn.edit') }}
             </v-btn>
+            <RatePlanMini v-if="ratePlan" :item="ratePlan" class="my-4" />
             <WidgetDates :entity="project" />
             <WidgetEstimate :entity="project" />
             <v-switch

@@ -138,28 +138,61 @@ export default {
     add: "Добавить ставку",
     create: 'Создать ставку',
     update: 'Обновить ставку',
+    applied: 'Применимая ставка',
     types: {
       hourly: {
-        title: 'В час',
-        per: '/час',
+        title: 'Часовая',
+        per: '/ час',
       },
-      monthly: {
-        title: 'В месяц',
-        per: '/мес',
+      recurring: {
+        title: 'Рекуррентная',
+        per: '/ {0}',
       },
       fixed: {
         title: 'Фиксированная',
-        per: ' фикс',
+        per: '',
       },
+    },
+    recurringUnit: {
+      week: {
+        title: 'Неделя',
+        short: 'нед',
+        count: '{0} недель | {0} неделя | {0} недели | {0} недель',
+      },
+      month: {
+        title: 'Месяц',
+        short: 'мес',
+        count: '{0} месяцев | {0} месяц | {0} месяца | {0} месяцев',
+      },
+      year: {
+        title: 'Год',
+        short: 'г',
+        count: '{0} лет | {0} год | {0} года | {0} лет',
+      },
+    },
+    scope: {
+      user: 'Пользователь',
+      client: 'Клиент',
+      project: 'Проект',
     },
     fields: {
       currency: 'Валюта',
-      value: 'Значение',
+      amount: 'Значение',
       type: 'Тип',
-      projects: 'Проекты',
-      dateFrom: 'Действует с',
-      dateTo: 'Действиует по',
-    }
+      project: 'Проект',
+      startDate: 'Действует с',
+      endDate: 'Действиует по',
+      client: 'Клиент',
+      scope: 'Область действия',
+      recurringUnit: 'Период повторения',
+      recurringCount: 'Количество',
+      includedHours: 'Включено часов',
+      overageHourly: 'Часовая ставка при превышении',
+    },
+    active: 'Активная',
+    notActive: 'Архив',
+    included: 'Включено {0}',
+    overage: 'потом',
   },
   tasks: {
     item: 'Задача',
@@ -319,6 +352,7 @@ export default {
     undefined: 'Не задана',
     from: 'С',
     to: 'По',
+    hours: ' {0} часов | {0} час | {0} часа | {0} часов',
   },
   priority: {
     title: 'Приоритет',

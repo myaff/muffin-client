@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { reactive, ref, watchEffect, computed, PropType } from 'vue';
+import { reactive, ref, watchEffect, computed, PropType, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
 import { useRatesStore } from '@/store/rates';
 import { useClientsStore } from '@/store/clients';
 import { UiAlert } from '@/models/ui.model';
-import { RateCreate } from '@/models/rates.model';
+import { RatePlanCreate } from '@/models/rates.model';
 import RateCreateForm from '@/components/RateCreate.vue';
 import useError from '@/composables/useError';
-import useRate from '@/composables/useRate';
 import { Project, ProjectCreate } from '@/models/projects.model';
 import { isNumber } from 'lodash-es';
 import { TaskPriority } from '@/models/tasks.model';
@@ -22,21 +21,15 @@ const props = defineProps({
   },
 })
 const emits = defineEmits(['submit', 'cancel']);
-const { t, n, d } = useI18n();
+const { t } = useI18n();
 const ratesStore = useRatesStore();
 const clientsStore = useClientsStore();
-const rates = computed(() => ratesStore.list);
-const clients = computed(() => clientsStore.list);
-watchEffect(() => {
-  if (!rates.value.length) ratesStore.fetchList();
-  if (!clients.value.length) clientsStore.fetchList();
-});
 // form
 const formInitialData = {
   title: props.project?.title ?? '',
   url: props.project?.url ?? '',
-  client: props.project?.client ?? null,
-  rates: [],
+  client: props.project?.client?.id ?? null,
+  ratePlan: props.project?.ratePlan?.id ?? null,
   code: props.project?.code ?? '',
   description: props.project?.description ?? '',
   active: props.project?.active ?? true,
@@ -44,12 +37,30 @@ const formInitialData = {
   startDate: props.project?.startDate ?? null,
   endDate: props.project?.endDate ?? null,
 };
+const formData = reactive(formInitialData);
+const clients = computed(() => clientsStore.list);
+const clientCurrencyId = computed(() => {
+  if (!formData.client) return null;
+  const client = clients.value.find(client => client.id === formData.client);
+  if (!client) return null;
+  return client.country.currency.id;
+});
+const rates = computed(() => {
+  if (!clientCurrencyId.value) return ratesStore.list;
+  return ratesStore.list.filter(plan => plan.currency.id === clientCurrencyId.value);
+});
+watch(clientCurrencyId, (value) => {
+  if (value) formData.ratePlan = null;
+});
+watchEffect(() => {
+  if (!rates.value.length) ratesStore.fetchList();
+  if (!clients.value.length) clientsStore.fetchList();
+});
 const estimate = reactive({
   min: props.project?.estimate?.min ?? null,
   max: props.project?.estimate?.max ?? null,
 })
 
-const formData = reactive(formInitialData);
 const rules = {
   title: { required },
   client: { required },
@@ -59,7 +70,14 @@ const $v = useVuelidate(rules, formData);
 const submit = async () => {
   const isValid = await $v.value.$validate();
   if (isValid) {
-    const payload = { ...formData } as Partial<ProjectCreate>;
+    const payload = {
+      ...formData,
+      client: { id: formData.client },
+      ratePlan: formData?.ratePlan
+        ? { id: formData.ratePlan }
+        : undefined,
+    } as Partial<ProjectCreate>;
+
     if (isNumber(estimate.min) || isNumber(estimate.max)) {
       payload.estimate = {
         min: isNumber(estimate.min) ? estimate.min : estimate.max,
@@ -77,7 +95,7 @@ const cancel = () => {
 const isSending = ref(false);
 const sendingError = ref<UiAlert | null>(null);
 const creationIsOpen = ref(false);
-const create = (formData: RateCreate) => {
+const create = (formData: RatePlanCreate) => {
   isSending.value = true;
   ratesStore.create(formData)
     .catch(e => sendingError.value = useError(e, t))
@@ -89,7 +107,6 @@ const create = (formData: RateCreate) => {
 const close = () => {
   creationIsOpen.value = false;
 }
-const { formatRateForSelect } = useRate({ t, n, d });
 const { priorities } = usePriority(t);
 </script>
 
@@ -198,12 +215,11 @@ const { priorities } = usePriority(t);
               :error-messages="$v.client.$errors.map(e => e.$message as string)"
               @blur="$v.client.$touch" />
             <v-select
-              v-model="formData.rates"
+              v-model="formData.ratePlan"
               :items="rates"
               :label="t('projects.fields.rate')"
-              :item-props="item => formatRateForSelect(item)"
-              item-value="id"
-              multiple>
+              item-title="name"
+              item-value="id">
               <template #append>
                 <v-btn elevation="0" variant="plain" icon="mdi-plus" @click="creationIsOpen = true" />
               </template>

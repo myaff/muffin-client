@@ -91,7 +91,7 @@ watch(detailIsOpen, value => {
         icon="mdi-close"
         class="close-dialog"
         variant="plain"
-        @click="creationIsOpen = false" />
+        @click="cancel" />
     </v-dialog>
     <v-dialog v-model="detailIsOpen" width="90vw" max-width="1280">
       <BankAccountDetail v-if="itemDetailed" :item="itemDetailed" @edit="openEdition" />

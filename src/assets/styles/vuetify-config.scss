@@ -26,6 +26,17 @@
 .text-trunc-disable {
   white-space: normal;
 }
+.text-valign {
+  &-top {
+    vertical-align: top;
+  }
+  &-middle {
+    vertical-align: middle;
+  }
+  &-bottom {
+    vertical-align: bottom;
+  }
+}
 .text-upper-first::first-letter {
   text-transform: uppercase;
 }
