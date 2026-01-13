@@ -89,7 +89,10 @@ export const useRatesStore = defineStore('rates', () => {
   }
 
   function update(id: number, formData: RatePlanUpdate) {
-    return service.update(id, formData).then(fetchList);
+    return service.update(id, formData).then((data) => {
+      fetchList();
+      return data;
+    });
   }
 
   function getRateForUser(currency: Pick<Currency, 'id'>) {

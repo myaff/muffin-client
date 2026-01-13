@@ -40,6 +40,11 @@
 .text-upper-first::first-letter {
   text-transform: uppercase;
 }
+.text-wrap {
+  &, & .v-btn__content {
+    white-space: initial;
+  }
+}
 .v-field {
   &__input {
     &::-internal-datetime-container {

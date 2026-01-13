@@ -51,7 +51,7 @@ const cancel = () => {
 </script>
 
 <template>
-  <v-card :title="version ? t('rates.update') : t('rates.create')">
+  <v-card :title="version ? t('rates.updateVersion') : t('rates.createVersion')">
     <v-card-item>
       <v-form @keyup.enter="submit">
         <v-text-field

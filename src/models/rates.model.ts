@@ -68,7 +68,7 @@ export interface RatePlan extends BaseContentEntity {
   currency: Currency;
   name: string;
   type: RateType;
-  recurringUnit: RateRecurringUnit;
+  recurringUnit: RateRecurringUnit | null;
   scope: RateScope;
   active: boolean;
 }

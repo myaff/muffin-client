@@ -81,6 +81,7 @@ export default {
   clients: {
     item: 'Клиент',
     items: 'Клиенты',
+    forItem: 'для клиента',
     empty: 'Клиентов не найдено',
     nClients: 'Нет клиентов | 1 клиент | {n} клиента | {n} клиентов',
     add: "Добавить клиента",
@@ -111,6 +112,7 @@ export default {
   projects: {
     item: 'Проект',
     items: 'Проекты',
+    forItem: 'для проекта',
     empty: 'Проектов не найдено',
     nProjects: 'Нет проектов | 1 проект | {n} проекта | {n} проектов',
     add: "Добавить проект",
@@ -136,9 +138,12 @@ export default {
     empty: 'Ставок не найдено',
     nRates: 'Нет ставок | 1 ставка | {n} ставок',
     add: "Добавить ставку",
-    create: 'Создать ставку',
-    update: 'Обновить ставку',
+    create: 'Добавить тариф',
+    update: 'Обновить тариф',
     applied: 'Применимая ставка',
+    override: 'Переопределить ставку',
+    createVersion: 'Добавить ставку',
+    updateVersion: 'Обновить ставку',
     types: {
       hourly: {
         title: 'Часовая',
@@ -176,6 +181,7 @@ export default {
       project: 'Проект',
     },
     fields: {
+      name: 'Название',
       currency: 'Валюта',
       amount: 'Значение',
       type: 'Тип',

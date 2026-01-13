@@ -81,6 +81,7 @@ export default {
   clients: {
     item: 'Client',
     items: 'Clients',
+    forItem: 'for client',
     empty: 'No clients found',
     nClients: 'No clients | 1 client | {n} clients',
     add: "Add client",
@@ -111,6 +112,7 @@ export default {
   projects: {
     item: 'Project',
     items: 'Projects',
+    forItem: 'for project',
     empty: 'No projects found',
     nProjects: 'No projects | 1 project | {n} projects',
     add: "Add project",
@@ -136,9 +138,12 @@ export default {
     empty: 'No rates found',
     nRates: 'No rates | 1 rate | {n} rates',
     add: "Add rate",
-    create: 'Create rate',
-    update: 'Update rate',
+    create: 'Create rate plan',
+    update: 'Update rate plan',
     applied: 'Applied rate',
+    createVersion: 'Create rate',
+    updateVersion: 'Update rate',
+    override: 'Override rate',
     types: {
       hourly: {
         title: 'Hourly',
@@ -176,6 +181,7 @@ export default {
       project: 'Project',
     },
     fields: {
+      name: 'Name',
       currency: 'Currency',
       type: 'Type',
       project: 'Project',
