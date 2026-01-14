@@ -1,6 +1,6 @@
 import { BaseContentEntity, Deliverable, Estimatable, Moodable } from "./common.model";
 import { Project } from "./projects.model";
-import { RateDetail, RatePlanWithVersions } from "./rates.model";
+import { RatePlanWithVersions } from "./rates.model";
 import { Status } from "./status.model";
 import { Tracking } from "./tracking.model";
 
@@ -11,7 +11,6 @@ export interface Task extends BaseContentEntity, Estimatable, Moodable, Delivera
   status: Status;
   url?: string;
   active: boolean;
-  rates?: RateDetail[];
   code: string;
   description: string;
   priority: TaskPriority;

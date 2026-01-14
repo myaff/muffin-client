@@ -1,20 +1,26 @@
 <script setup lang="ts">
 import WidgetDates from '@/components/WidgetDates.vue';
 import WidgetInfo from '@/components/WidgetInfo.vue';
+import useCreateUpdate from '@/composables/useCreateUpdate';
+import useError from '@/composables/useError';
 import { getQueryParamValue } from '@/helpers/url.helper';
 import { Client, ClientUpdate } from '@/models/clients.model';
+import { RateScope } from '@/models/rates.model';
 import { WidgetInfoItem } from '@/models/ui.model';
-import { useAppStore } from '@/store/app';
 import { useClientsStore } from '@/store/clients';
+import { useRatesStore } from '@/store/rates';
 import { isNumber } from 'lodash-es';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
+import RatePlanCreateUpdate from '@/components/rate/RatePlanCreateUpdate.vue';
+import RatePlanMini from '@/components/rate/RatePlanMini.vue';
+import { useDisplay } from 'vuetify';
 
 const emits = defineEmits(['edit']);
 const { t, locale } = useI18n();
+const { xs } = useDisplay();
 const route = useRoute();
-const appStore = useAppStore();
 const clientsStore = useClientsStore();
 const preparedId = computed(() => Number.parseInt(getQueryParamValue(route.params?.id ?? '')));
 const client = computed(() => clientsStore.detailsMap.get(preparedId.value));
@@ -96,6 +102,25 @@ const infoList = computed(() => {
   }
   return list;
 })
+
+// rates
+const ratesStore = useRatesStore();
+const ratePlan = computed(() => {
+  if (!client.value) return null;
+  if (client.value?.ratePlan) return client.value.ratePlan;
+  return ratesStore.getRateForClient(client.value);
+})
+const {
+  isSending,
+  sendingError,
+  creationIsOpen,
+  create,
+  cancel,
+  openCreation,
+} = useCreateUpdate({
+  store: ratesStore,
+  onError: (e) => useError(e, t),
+});
 </script>
 
 <template>
@@ -132,6 +157,15 @@ const infoList = computed(() => {
             <WidgetInfo :list="infoList" title-width="180" />
           </v-col>
           <v-col cols="12" md="4">
+            <RatePlanMini v-if="ratePlan" :item="ratePlan" class="my-4" />
+            <v-btn
+              v-if="!client?.ratePlan"
+              :text="`${t('rates.override')} ${t('clients.forItem')}`"
+              class="mb-6 text-wrap"
+              prepend-icon="mdi-currency-usd"
+              variant="tonal"
+              :size="xs ? 'large' : undefined"
+              @click="openCreation" />
             <WidgetDates :entity="client" />
             <v-switch
               v-model="active"
@@ -141,6 +175,26 @@ const infoList = computed(() => {
           </v-col>
         </v-row>
       </v-card-item>
+
+    <v-dialog v-model="creationIsOpen" width="90vw" max-width="500">
+      <template v-if="!sendingError">
+        <rate-plan-create-update
+          :scope="RateScope.CLIENT"
+          :client="client"
+          @cancel="cancel"
+          @submit="create" />
+        <v-overlay v-model="isSending" contained class="align-center justify-center">
+          <v-progress-circular indeterminate />
+        </v-overlay>
+      </template>
+      <v-alert v-else :title="sendingError?.title" :text="sendingError?.message" type="error" />
+      <v-btn
+        v-if="creationIsOpen && !isSending"
+        icon="mdi-close"
+        class="close-dialog"
+        variant="plain"
+        @click="cancel" />
+    </v-dialog>
     </template>
   </v-card>
 </template>

@@ -1,4 +1,4 @@
-import { RateDetail, RatePlanWithVersions } from "@/models/rates.model";
+import { RatePlanWithVersions, RateVersion } from "@/models/rates.model";
 import { isBefore, isSameDay } from "date-fns";
 
 type DateType = string | number | Date;
@@ -10,22 +10,12 @@ export function getRateVersionByDate(plan: RatePlanWithVersions, date: DateType)
   }) ?? null;
 }
 
-export function getRateByDate(rates: RateDetail[], date: DateType) {
-  const ratesForDate = rates
-    .filter(rate => {
-      return isDateBeforeOrEqual(rate.dateFrom, date)
-        && (!rate.dateTo || isDateBeforeOrEqual(date, rate.dateTo));
-    })
-    .sort(sortRates);
-  return ratesForDate.at(-1) || null;
-}
-
-export function sortRates(a: RateDetail, b: RateDetail) {
+export function sortRates(a: RateVersion, b: RateVersion) {
   const today = new Date();
-  const aDateFrom = new Date(a.dateFrom);
-  const aDateTo = a.dateTo ? new Date(a.dateTo) : today;
-  const bDateFrom = new Date(b.dateFrom);
-  const bDateTo = b.dateTo ? new Date(b.dateTo) : today;
+  const aDateFrom = new Date(a.startDate);
+  const aDateTo = a.endDate ? new Date(a.endDate) : today;
+  const bDateFrom = new Date(b.startDate);
+  const bDateTo = b.endDate ? new Date(b.endDate) : today;
   if (isBefore(aDateTo, bDateTo)) return -1;
   else if (isBefore(bDateTo, aDateTo)) return +1;
   else return Number(aDateFrom) - Number(bDateFrom);
