@@ -144,7 +144,6 @@ function getTableRow(tracking: TrackingCreatable | TrackingUpdatable, index: num
     : (tracking as TrackingUpdatable).task as Task;
   let rate: RateVersion | null = null;
   if (isNew && task) {
-    // rate = getRateByDate(task.project.rates ?? [], props.date)
     const version = getRateVersionByDate(task.ratePlan, props.date);
     if (version) {
       rate = {

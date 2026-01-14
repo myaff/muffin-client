@@ -1,11 +1,11 @@
 import { BaseContentEntity, Moodable } from "./common.model";
 import { Country } from "./country.model";
-import { RatePlan } from "./rates.model";
+import { RatePlan, RatePlanFull } from "./rates.model";
 
 export interface Client extends BaseContentEntity, Moodable {
   name: string;
   country: Country;
-  ratePlan: RatePlan | null;
+  ratePlan: RatePlanFull | null;
   fullName: string | null;
   active: boolean;
   region: string | null;

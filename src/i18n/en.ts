@@ -81,6 +81,7 @@ export default {
   clients: {
     item: 'Client',
     items: 'Clients',
+    forItem: 'for client',
     empty: 'No clients found',
     nClients: 'No clients | 1 client | {n} clients',
     add: "Add client",
@@ -111,6 +112,7 @@ export default {
   projects: {
     item: 'Project',
     items: 'Projects',
+    forItem: 'for project',
     empty: 'No projects found',
     nProjects: 'No projects | 1 project | {n} projects',
     add: "Add project",
@@ -136,30 +138,67 @@ export default {
     empty: 'No rates found',
     nRates: 'No rates | 1 rate | {n} rates',
     add: "Add rate",
-    create: 'Create rate',
-    update: 'Update rate',
+    create: 'Create rate plan',
+    update: 'Update rate plan',
+    applied: 'Applied rate',
+    createVersion: 'Create rate',
+    updateVersion: 'Update rate',
+    override: 'Override rate',
     types: {
       hourly: {
         title: 'Hourly',
-        per: '/h',
+        per: '/ h',
       },
-      monthly: {
-        title: 'Monthly',
-        per: '/m',
+      recurring: {
+        title: 'Recurring',
+        per: '/ {0}',
       },
       fixed: {
         title: 'Fixed',
-        per: ' fixed',
+        per: '',
       },
     },
+    recurringUnit: {
+      week: {
+        title: 'Week',
+        short: 'w',
+        count: '{0} week | {0} weeks',
+      },
+      month: {
+        title: 'Month',
+        short: 'm',
+        count: '{0} month | {0} monthes',
+      },
+      year: {
+        title: 'Year',
+        short: 'y',
+        count: '{0} year | {0} years',
+      },
+    },
+    scope: {
+      user: 'User',
+      client: 'Client',
+      project: 'Project',
+    },
     fields: {
+      name: 'Name',
       currency: 'Currency',
-      value: 'Link',
       type: 'Type',
-      projects: 'Projects',
-      dateFrom: 'Acts from',
-      dateTo: 'Acts to'
-    }
+      project: 'Project',
+      client: 'Client',
+      scope: 'Scope',
+      startDate: 'Acts from',
+      endDate: 'Acts to',
+      amount: 'Amount',
+      recurringUnit: 'Recurring unit',
+      recurringCount: 'Recurring units count',
+      includedHours: 'Hours included',
+      overageHourly: 'Overage, hourly',
+    },
+    included: 'Uncluded',
+    overage: 'then',
+    active: 'Active',
+    notActive: 'Archive',
   },
   tasks: {
     item: 'Task',
@@ -319,6 +358,7 @@ export default {
     undefined: 'Undefined',
     from: 'From',
     to: 'To',
+    hours: '{0} hours | {0} hour | {0} hours',
   },
   priority: {
     title: 'Priority',

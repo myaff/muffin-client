@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { Project, ProjectUpdate, ProjectDetail } from '@/models/projects.model';
-import { RateCreate, RateType } from '@/models/rates.model';
-import { UiAlert } from '@/models/ui.model';
+import { RateScope, RateType } from '@/models/rates.model';
 import { useProjectsStore } from '@/store/projects';
 import { isBefore } from 'date-fns';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
-import RateCreateForm from '@/components/RateCreate.vue';
-import RateAddForm from '@/components/RateAddForm.vue';
 import { useRatesStore } from '@/store/rates';
 import useError from '@/composables/useError';
 import { StatusGroup, StatusGroupColor } from '@/models/status.model';
@@ -17,9 +14,14 @@ import { getQueryParamValue } from '@/helpers/url.helper';
 import { isNumber } from 'lodash-es';
 import WidgetDates from '@/components/WidgetDates.vue';
 import WidgetEstimate from '@/components/WidgetEstimate.vue';
+import RatePlanMini from '@/components/rate/RatePlanMini.vue';
+import RatePlanCreateUpdate from '@/components/rate/RatePlanCreateUpdate.vue';
+import { useDisplay } from 'vuetify';
+import useCreateUpdate from '@/composables/useCreateUpdate';
 
 const emits = defineEmits(['edit']);
 const { d, n, t } = useI18n();
+const { xs } = useDisplay();
 const route = useRoute();
 const projectsStore = useProjectsStore();
 const preparedId = computed(() => Number.parseInt(getQueryParamValue(route.params.id)));
@@ -40,9 +42,6 @@ function updateActive() {
   update(project.value.id, { active: active.value })
     .finally(() => activeIsUpdating.value = false);
 }
-
-const projectCurrency = computed(() => project.value?.rates?.length ? project.value?.rates.at(0)?.currency.id : undefined);
-const projectRateType = computed(() => project.value?.rates?.length ? project.value?.rates.at(0)?.type : undefined);
 const projectTracking = computed(() => {
   if (!project.value) return [];
   return project.value.tasks.reduce((acc, task) => {
@@ -120,49 +119,22 @@ function fetch(id: number) {
 
 // rates
 const ratesStore = useRatesStore();
-const addingIsSending = ref(false);
-const addingIsOpen = ref(false);
-const addingError = ref<UiAlert | null>(null);
-const addRates = (rates: number[]) => {
-  addingIsSending.value = true;
-  const currentProject = project.value as Project;
-  projectsStore
-    .update(currentProject.id, { rates: rates.map(id => ({ id })) })
-    .then(() => {
-      fetch(currentProject.id);
-      addingIsOpen.value = false;
-    })
-    .catch(e => addingError.value = useError(e, t))
-    .finally(() => {
-      addingIsSending.value = false;
-    });
-}
-const openAdding = () => {
-  addingError.value = null;
-  addingIsOpen.value = true;
-  creationIsOpen.value = false;
-}
-// rate creation
-const creationIsSending = ref(false);
-const creationError = ref<UiAlert | null>(null);
-const creationIsOpen = ref(false);
-const createRate = (formData: RateCreate) => {
-  creationIsSending.value = true;
-  const currentProject = project.value as Project;
-  ratesStore
-    .create({ ...formData, projects: [{ id: currentProject.id }] })
-    .then(() => {
-      fetch(currentProject.id);
-      creationIsOpen.value = false;
-    })
-    .catch(e => creationError.value = useError(e, t))
-    .finally(() => creationIsSending.value = false);
-}
-const openCreation = () => {
-  creationError.value = null;
-  creationIsOpen.value = true;
-  addingIsOpen.value = false;
-}
+const ratePlan = computed(() => {
+  if (!project.value) return null;
+  if (project.value?.ratePlan) return project.value.ratePlan;
+  return ratesStore.getRateForProject(project.value);
+})
+const {
+  isSending,
+  sendingError,
+  creationIsOpen,
+  create,
+  cancel,
+  openCreation,
+} = useCreateUpdate({
+  store: ratesStore,
+  onError: (e) => useError(e, t),
+});
 </script>
 
 <template>
@@ -228,6 +200,15 @@ const openCreation = () => {
             <v-btn prepend-icon="mdi-pencil" class="ml-auto" @click="emits('edit', project)">
               {{ t('btn.edit') }}
             </v-btn>
+            <RatePlanMini v-if="ratePlan" :item="ratePlan" class="my-4" />
+            <v-btn
+              v-if="!project?.ratePlan"
+              :text="`${t('rates.override')} ${t('projects.forItem')}`"
+              class="mb-6 text-wrap"
+              prepend-icon="mdi-currency-usd"
+              variant="tonal"
+              :size="xs ? 'large' : undefined"
+              @click="openCreation" />
             <WidgetDates :entity="project" />
             <WidgetEstimate :entity="project" />
             <v-switch
@@ -242,32 +223,24 @@ const openCreation = () => {
     <v-overlay v-model="isLoading" contained class="align-center justify-center">
       <v-progress-circular indeterminate />
     </v-overlay>
-    <v-dialog v-model="addingIsOpen" width="640">
-      <template v-if="!addingError">
-        <rate-add-form
-          :currency="projectCurrency"
-          :type="projectRateType"
-          :values="(project?.rates || []).map(rate => rate.id)"
-          @cancel="addingIsOpen = false"
-          @create="openCreation"
-          @submit="addRates" />
-      </template>
-      <v-alert v-else :title="addingError?.title" :text="addingError?.message" type="error" />
-    </v-dialog>
-    <v-dialog v-model="creationIsOpen" width="640">
-      <template v-if="!creationError">
-        <rate-create-form
-          :currency="projectCurrency"
-          :type="projectRateType"
-          lock-currency
-          lock-type
-          @cancel="creationIsOpen = false"
-          @submit="createRate" />
-        <v-overlay v-model="creationIsSending" contained class="align-center justify-center">
+    <v-dialog v-model="creationIsOpen" width="90vw" max-width="500">
+      <template v-if="!sendingError">
+        <rate-plan-create-update
+          :scope="RateScope.PROJECT"
+          :project="project"
+          @cancel="cancel"
+          @submit="create" />
+        <v-overlay v-model="isSending" contained class="align-center justify-center">
           <v-progress-circular indeterminate />
         </v-overlay>
       </template>
-      <v-alert v-else :title="creationError?.title" :text="creationError?.message" type="error" />
+      <v-alert v-else :title="sendingError?.title" :text="sendingError?.message" type="error" />
+      <v-btn
+        v-if="creationIsOpen && !isSending"
+        icon="mdi-close"
+        class="close-dialog"
+        variant="plain"
+        @click="cancel" />
     </v-dialog>
   </v-card>
 </template>

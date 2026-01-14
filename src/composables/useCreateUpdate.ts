@@ -1,6 +1,6 @@
 import { UiAlert } from "@/models/ui.model";
 import { EntityStore } from "./useEntityStore";
-import { ref, watch } from "vue";
+import { nextTick, ref, watch } from "vue";
 import { BaseContentEntity } from "@/models/common.model";
 
 export interface CreateUpdteConfig<T extends BaseContentEntity, C = T, U = C> {
@@ -45,8 +45,10 @@ export default function useCreateUpdate<T extends BaseContentEntity, C = T, U = 
 
   const cancel = () => {
     creationIsOpen.value = false;
-    if (entityToEdit.value) entityToEdit.value = null;
-    if (sendingError.value) sendingError.value = null;
+    setTimeout(() => {
+      if (entityToEdit.value) entityToEdit.value = null;
+      if (sendingError.value) sendingError.value = null;
+    }, 500);
   }
 
   function openCreation() {

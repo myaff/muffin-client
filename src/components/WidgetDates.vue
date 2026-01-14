@@ -7,6 +7,14 @@ const props = defineProps({
     type: Object as PropType<BaseContentEntity & Partial<Deliverable>>,
     required: true,
   },
+  titleWidth: {
+    type: [String, Number],
+    default: 150,
+  },
+  mobileCollapse: {
+    type: Boolean,
+    default: false,
+  },
 })
 const { t, d } = useI18n();
 const list = computed(() => {
@@ -24,12 +32,24 @@ const list = computed(() => {
 </script>
 
 <template>
-  <v-table class="widget-dates text-left text-body-1">
-    <tr v-for="item in list" :key="item.key" class="widget-dates__row">
-      <th class="pa-1 font-weight-regular text-medium-emphasis" scope="row">
+  <v-table
+    class="widget-dates text-left text-body-1 text-valign-top"
+    :class="{'d-block d-sm-table': mobileCollapse}">
+    <tr
+      v-for="item in list"
+      :key="item.key"
+      class="widget-dates__row"
+      :class="{'d-block d-sm-table-row': mobileCollapse}">
+      <th
+        class="pa-1 font-weight-regular text-medium-emphasis"
+        scope="row"
+        :width="titleWidth"
+        :class="{'d-block d-sm-table-cell': mobileCollapse}">
         {{ item.title }}
       </th>
-      <td class="pa-1">
+      <td
+        class="pa-1"
+        :class="{'d-block d-sm-table-cell': mobileCollapse}">
         {{ item.value }}
       </td>
     </tr>
