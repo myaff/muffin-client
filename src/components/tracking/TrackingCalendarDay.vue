@@ -6,12 +6,13 @@ import { PropType, computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTasksStore } from '@/store/tasks';
 import { Task } from '@/models/tasks.model';
-import { endOfDay, endOfMonth, formatISO, startOfDay, startOfMonth } from 'date-fns';
+import { endOfDay, endOfMonth, format, formatISO, startOfDay, startOfMonth } from 'date-fns';
 import { useTrackingStore } from '@/store/tracking';
 import useError from '@/composables/useError';
 import TrackingSummary from '@/components/tracking/TrackingSummary.vue';
 import { getRateVersionByDate } from '@/helpers/rate.helper';
 
+const DATE_FORMAT = 'yyyy-MM-dd';
 const { t, d, n } = useI18n();
 const props = defineProps({
   date: {
@@ -38,14 +39,15 @@ const tasksMap = computed(() => {
   }, new Map<number, Task>());
 })
 const filter = computed(() => ({
-  dateFrom: startOfDay(startOfMonth(props.date)),
-  dateTo: endOfDay(endOfMonth(props.date)),
+  dateFrom: format(startOfDay(startOfMonth(props.date)), DATE_FORMAT),
+  dateTo: format(endOfDay(endOfMonth(props.date)), DATE_FORMAT),
 }));
 interface Updatable {
   editing: boolean,
   edited: boolean;
   amount: number;
   note: string;
+  billable: boolean;
 }
 interface Creatable extends Updatable {
   task: number | null;
@@ -60,6 +62,7 @@ const createInitialData = computed<Creatable>(() => ({
   editing: true,
   edited: false,
   rateVersion: null as RateVersion | null,
+  billable: true,
 }));
 const updatableFormData = ref<TrackingUpdatable[]>(props.tracking.map(item => createUpdatable(item)));
 watch(() => props.tracking, value => {
@@ -77,6 +80,12 @@ const tableHeaders: UiTableHeaderCell[] = [
     key: 'amount',
     title: t('tracking.fields.hoursShort'),
     width: '100',
+    sortable: false,
+  },
+  {
+    key: 'billable',
+    title: t('tracking.fields.billable'),
+    width: '50',
     sortable: false,
   },
   {
@@ -112,6 +121,7 @@ const tableData = computed(() => {
 const tableTotal = computed(() => {
   return tableData.value.reduce((acc, row) => {
     acc.amount += row.data.model.amount;
+    if (!row.data.model.billable) return acc;
     if (row.rate?.ratePlan.type === RateType.HOURLY) {
       if (!(acc.money[row.rate.ratePlan.currency.id])) acc.money[row.rate.ratePlan.currency.id] = 0;
       acc.money[row.rate.ratePlan.currency.id] += row.data.model.amount * row.rate.amount;
@@ -127,6 +137,7 @@ function createUpdatable(tracking: Tracking): TrackingUpdatable {
       edited: false,
       amount: tracking.amount,
       note: tracking.note || '',
+      billable: true,
     },
   };
 }
@@ -184,10 +195,10 @@ function addRecord() {
     model: { ...createInitialData.value },
     mood: null,
     rateVersion: null as unknown as RateVersion,
+    billable: createInitialData.value.billable,
   });
 }
 function commitChanges(item: TableRow) {
-  console.log(item);
   if (item.isNew) {
     const itemData = item.data as TrackingCreatable;
     itemData.amount = itemData.model.amount;
@@ -233,6 +244,7 @@ function save() {
     note: item.model.note,
     mood: item.mood,
     rateVersion: item.rateVersion,
+    billable: item.model.billable,
   }));
   const reqs = [];
   if (edited.length) reqs.push(trackingStore.update(edited, false));
@@ -294,6 +306,15 @@ function save() {
             <div v-else class="px-4 py-2">
               {{ item.data.model.amount }}
             </div>
+          </td>
+          <td class="text-center">
+            <v-checkbox
+              v-if="item.data.model.editing"
+              v-model="item.data.model.billable"
+              class="mx-auto"
+              hide-details
+              width="40" />
+            <v-icon v-else-if="item.data.billable" icon="mdi-check-bold" />
           </td>
           <td>{{ item.rateFormatted }}</td>
           <td>{{ item.subtotal }}</td>

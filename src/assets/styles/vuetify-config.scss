@@ -57,3 +57,34 @@
   font-weight: 400;
   font-style: normal;
 }
+@mixin scrollbar-thin($size: 2px, $color: var(--v-theme-on-surface), $hides: false, $track-color: transparent) {
+  -moz-scrollbar-width: thin;
+
+  & > div {
+    padding-right: $size;
+  }
+  &::-webkit-scrollbar,
+  & > div::-webkit-scrollbar {
+    width: $size;
+    height: $size;
+
+    &-thumb {
+      background: $color;
+    }
+    &-track {
+      background: $track-color;
+    }
+  }
+  @if $hides {
+    &::-webkit-scrollbar-thumb {
+      visibility: hidden;
+    }
+    &:hover::-webkit-scrollbar-thumb,
+    &:active::-webkit-scrollbar-thumb {
+      visibility: visible;
+    }
+  }
+}
+.scrollbar-thin {
+  @include scrollbar-thin;
+}

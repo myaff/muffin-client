@@ -2,7 +2,6 @@ import { Client } from "./clients.model";
 import { BaseContentEntity, Deliverable, Estimatable, Moodable } from "./common.model";
 import { RatePlanFull } from "./rates.model";
 import { Task, TaskDetail } from "./tasks.model";
-import { Tracking } from "./tracking.model";
 
 export interface Project extends BaseContentEntity, Estimatable, Moodable, Deliverable {
   title: string;

@@ -3,7 +3,6 @@ import { ApiService } from "./api.service";
 import { Transaction, TransactionCreate, TransactionUpdate } from "@/models/transaction.model";
 import { AxiosError } from "axios";
 import { FetchListParams, PaginatableList } from "@/models/common.model";
-import qs from "qs";
 
 export class TransactionService
   extends ApiService
@@ -38,12 +37,7 @@ export class TransactionService
   }
 
   findAll(params?: FetchListParams) {
-    const q = params
-      ? qs.stringify(params, {
-        addQueryPrefix: true,
-        arrayFormat: 'repeat',
-      })
-      : '';
+    const q = this.stringifyParams(params);
     return TransactionService.api
       .get<PaginatableList<Transaction>>(this.resource + q)
       .then(res => res.data)

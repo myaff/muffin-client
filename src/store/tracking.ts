@@ -1,70 +1,17 @@
 import { FetchListParams } from "@/models/common.model";
-import { Tracking, TrackingCreate, TrackingFilter, TrackingUpdate } from "@/models/tracking.model";
+import { TrackingCreate, TrackingUpdate } from "@/models/tracking.model";
 import { TrackingService } from "@/services/tracking.service";
-import { endOfMonth, formatISO, startOfMonth } from "date-fns";
 import { defineStore } from "pinia";
-import { computed, reactive, ref, watch } from "vue";
-import { useUserStore } from "./user";
-
-interface TrackingDay {
-  date: Date;
-  total: number;
-  tracking: Tracking[];
-}
 
 export const useTrackingStore = defineStore('tracking', () => {
   const service = new TrackingService();
-  const list = ref<Tracking[]>([]);
-  const isLoading = ref(false);
-  const calendar = computed(() => {
-    return list.value.reduce((acc, item) => {
-      const date = new Date(item.date);
-      if (acc.has(date)) {
-        const accItem = acc.get(date) as TrackingDay;
-        accItem.total += item.amount;
-        accItem.tracking.push(item);
-      } else {
-        acc.set(date, { date, total: item.amount, tracking: [item] });
-      }
-      return acc;
-    }, new Map<Date, TrackingDay>());
-  })
-  const filter = reactive<TrackingFilter>({
-    dateFrom: startOfMonth(new Date()),
-    dateTo: endOfMonth(new Date()),
-    project: [] as number[],
-    client: null,
-  });
-  const userStore = useUserStore();
 
-  watch(() => userStore.accessToken, value => {
-    if (!value) list.value = [];
-  })
-
-  const setFilter = (data: Partial<TrackingFilter>) => {
-    if (data.dateFrom) filter.dateFrom = data.dateFrom;
-    if (data.dateTo) filter.dateTo = data.dateTo;
-    if ('project' in data) filter.project = data.project;
-    if ('client' in data) filter.client = data.client;
+  const fetchList = (filterData?: FetchListParams) => {
+    return service.findAll(filterData);
   }
 
-  const fetchList = (filterData?: Partial<TrackingFilter>) => {
-    const transformedFilter: FetchListParams = {
-      dateFrom: formatISO(filterData?.dateFrom || filter.dateFrom),
-      dateTo: formatISO(filterData?.dateTo || filter.dateTo),
-    }
-    if (filterData?.project?.length || filter.project?.length) {
-      transformedFilter.project = filterData?.project || filter.project;
-    }
-    if (filterData?.client || filter.client) {
-      transformedFilter.client = (filterData?.client || filter.client) as number;
-    }
-    isLoading.value = true;
-    return service.findAll(transformedFilter)
-      .then(data => {
-        list.value = data;
-      })
-      .finally(() => isLoading.value = false);
+  const fetchCalendar = (filterData: FetchListParams) => {
+    return service.findCalendar(filterData);
   }
 
   const fetchDetail = (id: number) => {
@@ -95,5 +42,12 @@ export const useTrackingStore = defineStore('tracking', () => {
     })
   }
 
-  return { list, isLoading, calendar, filter, setFilter, fetchList, fetchDetail, create, update };
+  return {
+    service,
+    fetchList,
+    fetchCalendar,
+    fetchDetail,
+    create,
+    update,
+  };
 });

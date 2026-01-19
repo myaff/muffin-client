@@ -1,5 +1,6 @@
 import { BaseContentEntity, Moodable } from "./common.model";
-import { RateVersion } from "./rates.model";
+import { Project } from "./projects.model";
+import { RatePlan, RateVersion } from "./rates.model";
 import { Task } from "./tasks.model";
 
 export interface Tracking extends BaseContentEntity, Moodable {
@@ -8,6 +9,7 @@ export interface Tracking extends BaseContentEntity, Moodable {
   note?: string;
   amount: number;
   rateVersion: RateVersion;
+  billable: boolean;
 }
 
 export type TrackingCreate = Omit<Tracking, 'id' | 'createdAt' | 'updatedAt'> & {
@@ -28,8 +30,8 @@ export function isTracking(data: unknown): data is Tracking {
 }
 
 export interface TrackingDateFilter {
-  dateFrom: Date;
-  dateTo: Date;
+  dateFrom: string;
+  dateTo: string;
 }
 
 export interface TrackingExtraFilter {
@@ -42,4 +44,18 @@ export type TrackingFilter = TrackingDateFilter & TrackingExtraFilter;
 export interface TrackingDay {
   tracking: Tracking[];
   total: number;
+}
+
+export interface TrackingDayDto extends TrackingDay {
+  date: string;
+}
+export interface TrackingCalendarDto {
+  [key: string]: TrackingDayDto;
+}
+
+export type TrackingLight = Omit<Tracking, 'task' | 'rateVersion'> & {
+  task: Pick<Task, 'id'>;
+  project: Pick<Project, 'id'>;
+  rateVersion: Pick<RateVersion, 'id'>;
+  ratePlan: Pick<RatePlan, 'id'>;
 }

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { formatISO, isDate } from "date-fns";
+import qs from "qs";
 
 export abstract class ApiService {
   static api = axios.create({
@@ -20,5 +21,14 @@ export abstract class ApiService {
   formatDate(date: string | Date) {
     const dateInstance = isDate(date) ? date as Date : new Date(date);
     return formatISO(dateInstance);
+  }
+
+  stringifyParams(params?: any) {
+    return params
+      ? qs.stringify(params, {
+        addQueryPrefix: true,
+        arrayFormat: 'repeat',
+      })
+      : '';
   }
 }

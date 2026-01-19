@@ -1,9 +1,8 @@
 import { ApiService } from "./api.service";
 import { AxiosError } from "axios";
 import { EntityService, ListService } from "@/models/service.model";
-import { Tracking, TrackingCreate, TrackingUpdate } from "@/models/tracking.model";
+import { Tracking, TrackingCalendarDto, TrackingCreate, TrackingUpdate } from "@/models/tracking.model";
 import { FetchListParams, PaginatableList } from "@/models/common.model";
-import qs from 'qs';
 import { isArray } from "lodash-es";
 
 export class TrackingService extends ApiService implements ListService<Tracking>, EntityService<Tracking, TrackingCreate, TrackingUpdate> {
@@ -20,7 +19,8 @@ export class TrackingService extends ApiService implements ListService<Tracking>
 
   update(id: string | number, formData: TrackingUpdate) {
     return TrackingService.api
-      .patch<Tracking>(`${this.resource}/${id}`, formData);
+      .patch<Tracking>(`${this.resource}/${id}`, formData)
+      .then(res => res.data);
   }
 
   delete(id: string | number) {
@@ -37,14 +37,19 @@ export class TrackingService extends ApiService implements ListService<Tracking>
   }
 
   findAll(params?: FetchListParams) {
-    const q = params
-      ? qs.stringify(params, {
-        addQueryPrefix: true,
-        arrayFormat: 'repeat',
-      })
-      : '';
+    const q = this.stringifyParams(params);
     return TrackingService.api
       .get<PaginatableList<Tracking>>(this.resource+q)
+      .then(res => res.data)
+      .catch((error: AxiosError) => {
+        throw { title: error.code, message: error.message };
+      });
+  }
+
+  findCalendar(params?: FetchListParams) {
+    const q = this.stringifyParams(params);
+    return TrackingService.api
+      .get<TrackingCalendarDto>(`${this.resource}/calendar${q}`)
       .then(res => res.data)
       .catch((error: AxiosError) => {
         throw { title: error.code, message: error.message };

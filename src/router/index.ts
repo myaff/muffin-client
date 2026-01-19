@@ -146,13 +146,25 @@ const routes = [
               icon: 'mdi-cash-multiple',
             },
           },
-        },{
+        },
+        {
           path: 'transactions',
           name: 'financeTransactions',
           component: () => import('@/views/finance/transactions.vue'),
           meta: {
             tab: {
               key: 'financeTransactions',
+              icon: 'mdi-table',
+            },
+          },
+        },
+        {
+          path: 'invoices',
+          name: 'financeInvoices',
+          component: () => import('@/views/finance/invoices.vue'),
+          meta: {
+            tab: {
+              key: 'invoices',
               icon: 'mdi-table',
             },
           },

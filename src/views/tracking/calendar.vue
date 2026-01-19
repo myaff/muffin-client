@@ -8,12 +8,13 @@ import CalendarTrackingRecord from '@/components/tracking/CalendarTrackingRecord
 import TrackingCalendarDay from '@/components/tracking/TrackingCalendarDay.vue';
 import TrackingSummary from '@/components/tracking/TrackingSummary.vue';
 import { useTrackingStore } from '@/store/tracking';
-import { TrackingCreate, TrackingDay, TrackingFilter } from '@/models/tracking.model';
+import { TrackingCreate, TrackingDay, TrackingDayDto  } from '@/models/tracking.model';
 import { endOfMonth, format, isValid, parseISO, startOfMonth } from 'date-fns';
 import { useRoute, useRouter } from 'vue-router';
 import useError from '@/composables/useError';
 import { RateType } from '@/models/rates.model';
 import { getQueryParamValue, getQueryParamBoolean } from '@/helpers/url.helper';
+import { FetchListParams } from '@/models/common.model';
 
 const DATE_FORMAT = 'yyyy-MM-dd';
 const Q_OPENED = 'opened';
@@ -22,7 +23,6 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const trackingStore = useTrackingStore();
-const list = computed(() => trackingStore.list);
 const loadingError = ref<UiAlert | null>(null);
 
 // calendar
@@ -34,16 +34,7 @@ const dateFromQuery = computed(() => {
   return isValid(parsed) ? parsed : null;
 });
 const calendarValue = ref(dateFromQuery.value ?? new Date());
-const calendarData = computed(() => {
-  return list.value.reduce((acc, tracking) => {
-    const dateFormatted = format(new Date(tracking.date), DATE_FORMAT);
-    if (!acc.has(dateFormatted)) acc.set(dateFormatted, { tracking: [], total: 0 });
-    const current = acc.get(dateFormatted) as TrackingDay;
-    current.tracking.push(tracking);
-    current.total += tracking.amount;
-    return acc;
-  }, new Map<string, TrackingDay>());
-});
+const calendarData = ref<Map<string, TrackingDayDto>>(new Map());
 const openedDay = computed(() => {
   const date = dayIsOpen.value && calendarValue.value
     ? new Date(calendarValue.value)
@@ -79,26 +70,30 @@ const onDayClick = (date: Date) => {
 }
 // data fetching
 const filter = reactive({
-  dateFrom: startOfMonth(calendarValue.value),
-  dateTo: endOfMonth(calendarValue.value),
+  dateFrom: format(startOfMonth(calendarValue.value), DATE_FORMAT),
+  dateTo: format(endOfMonth(calendarValue.value), DATE_FORMAT),
 });
 function setFilter(date: Date) {
-  filter.dateFrom = startOfMonth(date);
-  filter.dateTo = endOfMonth(calendarValue.value);
+  filter.dateFrom = format(startOfMonth(date), DATE_FORMAT);
+  filter.dateTo = format(endOfMonth(calendarValue.value), DATE_FORMAT);
 }
 watch(calendarValue, value => {
   updateRoute();
   setFilter(value);
-  fetchList(filter);
+  fetchCalendar(filter);
 }, { flush: 'post' });
 watch(dayIsOpen, value => {
   if (!value) updateRoute();
 });
-const fetchList = async (filter: TrackingFilter) => {
-  trackingStore.fetchList(filter)
+const fetchCalendar = (filter: FetchListParams) => {
+  return trackingStore.fetchCalendar(filter)
+    .then(data => {
+      if (data) calendarData.value = new Map(Object.entries(data));
+      else calendarData.value.clear();
+    })
     .catch(e => loadingError.value = useError(e, t));
 }
-fetchList(filter);
+fetchCalendar(filter);
 function updateRoute() {
   router.replace({
     ...route,
@@ -117,7 +112,7 @@ const creationIsOpen = ref(false);
 const create = (formData: TrackingCreate | TrackingCreate[]) => {
   isSending.value = true;
   trackingStore.create(formData, false)
-    .then(() => fetchList(filter))
+    .then(() => fetchCalendar(filter))
     .catch(e => sendingError.value = useError(e, t))
     .finally(() => {
       creationIsOpen.value = false;
