@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Client } from '@/models/clients.model';
-import { InvoiceEntryPreview } from '@/models/invoice.model';
+import { InvoiceEntry, InvoiceEntryPreview } from '@/models/invoice.model';
 import { UiTableHeaderCell } from '@/models/ui.model';
 import { computed, PropType, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -12,6 +12,10 @@ const props = defineProps({
     default: null,
   },
   entries: {
+    type: Map as PropType<Map<string, Omit<InvoiceEntry, 'invoice'>> | null>,
+    default: null,
+  },
+  preview: {
     type: Map as PropType<Map<string, InvoiceEntryPreview>>,
     default: null,
   },
@@ -46,7 +50,6 @@ const tableHeaders: UiTableHeaderCell[] = [
     key: 'task',
     title: t('tracking.fields.task'),
     sortable: false,
-    align: 'center',
   },
   {
     key: 'amount',
@@ -83,6 +86,13 @@ const tableHeaders: UiTableHeaderCell[] = [
     width: '48',
   },
 ];
+const mergedEntries = computed(() => {
+  if (!props.entries?.size) return Array.from(props.preview.values());
+  return [
+    ...Array.from(props.entries.values()),
+    ...Array.from(props.preview.values()),
+  ];
+})
 const { xs } = useDisplay();
 </script>
 
@@ -93,7 +103,7 @@ const { xs } = useDisplay();
       v-model="selected"
       :loading="isLoading"
       :headers="tableHeaders"
-      :items="Array.from(entries.values())"
+      :items="mergedEntries"
       item-value="key"
       show-select
       fixed-header
@@ -112,7 +122,20 @@ const { xs } = useDisplay();
             <v-checkbox-btn v-model="selected" :value="item.key" />
           </td>
           <td>
-            {{ formData[item.key] }}
+            <v-textarea
+              v-model="formData[item.key]"
+              :variant="isSelected(internalItem) ? 'filled' : 'solo'"
+              single-line
+              rows="1"
+              flat
+              density="comfortable"
+              auto-grow
+              hide-details
+              bg-color="surface"
+              :readonly="!isSelected(internalItem)"
+              :rules="[(value) => value.length > 2]"
+              :append-inner-icon="isSelected(internalItem) ? 'mdi-pencil' : ''"
+              glow />
           </td>
           <td class="text-center">{{ item.count }}</td>
           <td class="text-center">

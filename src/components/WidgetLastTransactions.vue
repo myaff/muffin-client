@@ -29,9 +29,9 @@ const add = () => {
 </script>
 
 <template>
-  <v-card :title="t('transaction.last')">
+  <v-card :title="t('transaction.last')" class="h-100">
     <template v-if="!isEmptyList" #append>
-      <v-btn icon="mdi-plus" @click="add" />
+      <v-btn icon="mdi-plus" flat @click="add" />
     </template>
     <TransactionList
       ref="listRef"

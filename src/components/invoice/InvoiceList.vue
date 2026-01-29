@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import useCreateUpdate from '@/composables/useCreateUpdate';
 import useError from '@/composables/useError';
-import { UiAlert } from '@/models/ui.model';
+import { UiAlert, UiTableHeaderCell } from '@/models/ui.model';
 import { computed, PropType, ref, watch, watchEffect } from 'vue';
 import { useI18n } from 'vue-i18n';
 import useDelete from '@/composables/useDelete';
@@ -9,7 +9,7 @@ import DeletionDialog from '../DeletionDialog.vue';
 import useListStore from '@/composables/useListStore';
 import { FetchListParams, FilterParams, SortParams } from '@/models/common.model';
 import { useInvoicesStore } from '@/store/invoices';
-import { Invoice, InvoiceCreate, InvoiceUpdate } from '@/models/invoice.model';
+import { Invoice, InvoiceCreate, InvoiceStatus, InvoiceUpdate } from '@/models/invoice.model';
 import InvoiceCreateUpdate from './InvoiceCreateUpdate.vue';
 
 const props = defineProps({
@@ -37,6 +37,8 @@ const {
   isLoading,
   fetchList,
   paginationQuery,
+  page,
+  totalCount,
   pagesCount,
   setPage,
 } = useListStore(invoicesStore.service, { page: props.page, pageSize: props.pageSize });
@@ -88,51 +90,140 @@ const {
 invoicesStore.$onAction(({ after }) => {
   after(() => fetchListInternal(requestParams.value));
 })
-
 defineExpose({ openCreation });
+
+// table
+const tableHeaders: UiTableHeaderCell[] = [
+  {
+    key: 'client',
+    title: t('clients.item'),
+  },
+  {
+    key: 'total',
+    title: t('invoice.sum'),
+    width: '160',
+    align: 'end',
+  },
+  {
+    key: 'range',
+    title: t('date.range'),
+    width: '200',
+  },
+  {
+    key: 'issuedDate',
+    title: t('invoice.fields.issuedDateShort'),
+    width: '100',
+  },
+  {
+    key: 'dueDate',
+    title: t('invoice.fields.dueDateShort'),
+    width: '150',
+  },
+  {
+    key: 'paidDate',
+    title: t('invoice.fields.paidDateShort'),
+    width: '100',
+  },
+  {
+    key: 'status',
+    title: t('invoice.fields.status'),
+    align: 'center',
+  },
+  {
+    key: 'actions',
+    sortable: false,
+    width: '120',
+  },
+];
+
+// status
+const statuses = Object.values(InvoiceStatus).map(key => ({
+  title: t(`invoice.status.${key}`),
+  value: key,
+}));
+const statusColor = {
+  [InvoiceStatus.DRAFT]: 'default',
+  [InvoiceStatus.SENT]: 'warning',
+  [InvoiceStatus.PARTLY_PAID]: 'light-green',
+  [InvoiceStatus.PAID]: 'success',
+};
+const updateStatus = (value: InvoiceStatus) => {
+  console.log('updateStatus', value);
+}
 </script>
 
 <template>
   <div class="transaction-list pb-4">
-    <v-list v-if="listMapped.length">
-      <v-list-item v-for="item in listMapped" :key="item.id">
-        <v-list-item-title>
-          {{ item.client.name }}
-        </v-list-item-title>
-        <v-list-item-subtitle>
-          {{ `${d(item.startDate, 'short')} - ${d(item.endDate, 'short')}` }}
-        </v-list-item-subtitle>
-        <template #append>
-          <p class="text-h6">
+    <v-data-table-server
+      :headers="tableHeaders"
+      :items="list"
+      :items-length="totalCount"
+      :loading="isLoading">
+      <template #item="{ item }">
+        <tr>
+          <td>{{ item.client.name }}</td>
+          <td class="text-right">
             {{ n(item.total, { key: 'currency', currency: item.currency.id }) }}
-          </p>
-          <v-btn
-            icon="mdi-pencil"
-            size="small"
-            class="ml-3"
-            variant="plain"
-            @click="openEdition(item)" />
-          <v-btn
-            icon="mdi-trash-can-outline"
-            size="small"
-            class="ml-1"
-            variant="plain"
-            color="error"
-            :disabled="isDeleting"
-            :loading="isDeleting && entityToDelete === item.id"
-            @click="openDeletion(item.id)" />
-        </template>
-      </v-list-item>
-    </v-list>
-    <v-alert v-else variant="text" max-width="640">
-      <p class="text-body-1 text-medium-emphasis">
-        {{ t('invoice.empty') }}
-      </p>
-      <v-btn color="primary" size="large" class="mt-6" @click="openCreation">
-        {{ t('invoice.create') }}
-      </v-btn>
-    </v-alert>
-    <v-pagination v-if="pagesCount > 1" :length="pagesCount" @update:model-value="setPage" />
+          </td>
+          <td>
+            {{ d(item.startDate, 'short') + ' - ' + d(item.endDate, 'short') }}
+          </td>
+          <td>
+            {{ d(item.issuedDate, 'short') }}
+          </td>
+          <td>
+            {{ d(item.dueDate, 'short') }}
+          </td>
+          <td>
+            {{ item.paidDate ? d(item.paidDate, 'short') : '-' }}
+          </td>
+          <td>
+            <v-select
+              v-if="statuses.length"
+              :model-value="item.status"
+              :items="statuses"
+              item-title="title"
+              item-value="value"
+              :bg-color="statusColor[item.status]"
+              variant="solo"
+              density="compact"
+              flat
+              hide-details
+              :item-props="item => ({ ...item, title: item.title.toUpperCase() })"
+              @update:model-value="updateStatus">
+              <template #selection="{ item }">
+                <v-chip :color="statusColor[item.value as InvoiceStatus]">
+                  {{ item.title }}
+                </v-chip>
+              </template>
+              <template #item="{ props, item }">
+                <v-list-item v-bind="{...props, title: ''}">
+                  <v-chip :color="statusColor[item.value as InvoiceStatus]">
+                    {{ item.title }}
+                  </v-chip>
+                </v-list-item>
+              </template>
+            </v-select>
+          </td>
+          <td>
+            <v-btn
+              icon="mdi-pencil"
+              size="small"
+              variant="plain"
+              @click="openEdition(item)" />
+            <v-btn
+              icon="mdi-trash-can-outline"
+              size="small"
+              class="ml-1"
+              variant="plain"
+              color="error"
+              :disabled="isDeleting || item.status !== InvoiceStatus.DRAFT"
+              :loading="isDeleting && entityToDelete === item.id"
+              @click="openDeletion(item.id)" />
+          </td>
+        </tr>
+      </template>
+    </v-data-table-server>
     <v-dialog v-model="creationIsOpen" width="90vw" max-width="1280">
       <template v-if="!sendingError">
         <InvoiceCreateUpdate

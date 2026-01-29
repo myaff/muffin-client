@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BankAccountCarousel from '@/components/finance/BankAccountCarousel.vue';
+import WidgetIncomeExpenseByCategory from '@/components/WidgetIncomeExpenseByCategory.vue';
 import WidgetLastTransactions from '@/components/WidgetLastTransactions.vue';
 </script>
 
@@ -10,7 +11,9 @@ import WidgetLastTransactions from '@/components/WidgetLastTransactions.vue';
       <v-col cols="12" md="6">
         <widget-last-transactions />
       </v-col>
-      <v-col cols="12" md="6"></v-col>
+      <v-col cols="12" md="6">
+        <widget-income-expense-by-category />
+      </v-col>
     </v-row>
   </div>
 </template>

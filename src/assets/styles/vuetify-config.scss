@@ -12,10 +12,11 @@
   right: 20px;
 }
 .v-data-table-header {
-  &__content {
-    span:first-child {
-      margin-right: auto;
-    }
+  &__sort-icon {
+    margin-left: 8px;
+  }
+  .v-data-table-column--align-end &__content {
+    display: block;
   }
 }
 .close-dialog {

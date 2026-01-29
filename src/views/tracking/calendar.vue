@@ -111,7 +111,7 @@ const sendingError = ref<UiAlert | null>(null);
 const creationIsOpen = ref(false);
 const create = (formData: TrackingCreate | TrackingCreate[]) => {
   isSending.value = true;
-  trackingStore.create(formData, false)
+  trackingStore.create(formData)
     .then(() => fetchCalendar(filter))
     .catch(e => sendingError.value = useError(e, t))
     .finally(() => {

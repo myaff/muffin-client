@@ -17,6 +17,8 @@ export interface SortParams {
   order: SortOrder;
 }
 
+export type FetchListParams = Partial<PaginationParams & FilterParams & SortParams>;
+
 export interface Paginatable {
   page: number;
   pageSize: number;
@@ -25,8 +27,6 @@ export interface Paginatable {
   hasNext: boolean;
   hasPrev: boolean;
 }
-
-export type FetchListParams = Partial<PaginationParams & FilterParams & SortParams>;
 
 export interface PaginatableList<T extends BaseContentEntity> extends Paginatable {
   list: T[];

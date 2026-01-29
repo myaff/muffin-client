@@ -1,56 +1,10 @@
-<template>
-  <v-app>
-    <v-navigation-drawer v-if="isAuthorized" rail>
-      <v-list>
-        <v-list-item title="Muffin" />
-      </v-list>
-      <v-divider />
-      <v-list nav>
-        <v-list-item 
-          v-for="item in nav"
-          :key="item.name"
-          :to="item.to"
-          :title="t(`page.${item.key}`)"
-          :prepend-icon="item.icon"
-          :active="navRoute.name === item.name" />
-      </v-list>
-      <template #append>
-        <v-list>
-          <v-list-item @click="signOut" :title="t('btn.signout')" prepend-icon="mdi-logout-variant" />
-        </v-list>
-      </template>
-    </v-navigation-drawer>
-    <v-main>
-      <v-app-bar>
-        <v-app-bar-title v-if="navRoute.name !== 'home'" class="app-bar-title">
-          {{ t(`page.${navRoute.name as String}`) }}
-        </v-app-bar-title>
-        <v-tabs v-if="tabs.length" align-tabs="title">
-          <v-tab
-            v-for="tab in tabs"
-            :key="tab.key"
-            :to="tab.to"
-            :active="route.name === tab.name">
-            {{ t(`page.${tab.key}`) }}
-          </v-tab>
-        </v-tabs>
-        <template #append>
-          <v-list-item :title="userName" :subtitle="user.email" append-icon="mdi-account" class="text-right"/>
-        </template>
-      </v-app-bar>
-      <v-layout class="page-content pa-4" full-height>
-        <router-view />
-      </v-layout>
-    </v-main>
-  </v-app>
-</template>
-
 <script lang="ts" setup>
 import { useUserStore } from '@/store/user';
 import { onMounted } from 'vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
+import { useTheme } from 'vuetify';
 
 const { t } = useI18n();
 
@@ -71,13 +25,13 @@ const nav = computed(() => {
     });
 });
 
-interface RouteWithTab { 
-  name: string; 
-  meta: { 
-    tab: { 
-      key: string; 
-      icon: string; 
-    } 
+interface RouteWithTab {
+  name: string;
+  meta: {
+    tab: {
+      key: string;
+      icon: string;
+    }
   };
 }
 const navRoute = computed(() => {
@@ -111,7 +65,59 @@ const signOut = () => {
   userStore.signOut();
   router.push({ name: 'auth' });
 }
+const theme = useTheme();
 </script>
+
+<template>
+  <v-app>
+    <v-navigation-drawer v-if="isAuthorized" rail>
+      <v-list>
+        <v-list-item title="Muffin" />
+      </v-list>
+      <v-divider />
+      <v-list nav>
+        <v-list-item
+          v-for="item in nav"
+          :key="item.name"
+          :to="item.to"
+          :title="t(`page.${item.key}`)"
+          :prepend-icon="item.icon"
+          :active="navRoute.name === item.name" />
+      </v-list>
+      <template #append>
+        <v-list>
+          <v-list-item @click="signOut" :title="t('btn.signout')" prepend-icon="mdi-logout-variant" />
+        </v-list>
+      </template>
+    </v-navigation-drawer>
+    <v-main>
+      <v-app-bar>
+        <v-app-bar-title v-if="navRoute.name !== 'home'" class="app-bar-title">
+          {{ t(`page.${navRoute.name as String}`) }}
+        </v-app-bar-title>
+        <v-tabs v-if="tabs.length" align-tabs="title">
+          <v-tab
+            v-for="tab in tabs"
+            :key="tab.key"
+            :to="tab.to"
+            :active="route.name === tab.name">
+            {{ t(`page.${tab.key}`) }}
+          </v-tab>
+        </v-tabs>
+        <template #append>
+          <v-list-item>
+            <v-switch :model-value="theme.name.value" @update:model-value="theme.toggle()" inset />
+          </v-list-item>
+          <v-list-item :title="userName" :subtitle="user.email" append-icon="mdi-account" class="text-right"/>
+        </template>
+      </v-app-bar>
+      <v-layout class="page-content pa-4" full-height>
+        <router-view />
+      </v-layout>
+    </v-main>
+  </v-app>
+</template>
+
 
 <style scoped lang="scss">
 .app-bar-title {

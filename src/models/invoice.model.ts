@@ -18,11 +18,21 @@ export enum InvoiceEntryUnit {
   PCS = 'PCS',
 }
 
-export interface InvoiceEntry extends BaseContentEntity {
+export interface InvoiceEntryBase {
   name: string;
+  key: string;
   pricePerUnit: number;
   count: number;
   total: number;
+  unit: InvoiceEntryUnit;
+}
+export const NOID = 0;
+export interface InvoiceEntryPreview extends InvoiceEntryBase {
+  id: typeof NOID; // 0!
+  tracking: TrackingLight[];
+}
+
+export interface InvoiceEntry extends BaseContentEntity, Omit<InvoiceEntryPreview, 'id'> {
   invoice: Omit<Invoice, 'entries'>;
 }
 
@@ -52,12 +62,6 @@ export type InvoiceCreate = Omit<Invoice, 'id' | 'createdAt' | 'updatedAt' | 'en
 }
 
 export type InvoiceUpdate = Partial<InvoiceCreate & { entries: InvoiceEntryUpdate[] }>;
-
-export interface InvoiceEntryPreview extends Omit<InvoiceEntry, 'id' | 'createdAt' | 'updatedAt' | 'invoice' | 'tracking'> {
-  key: string;
-  unit: InvoiceEntryUnit;
-  tracking: TrackingLight[];
-}
 
 export interface InvoicePreview {
   entries: InvoiceEntryPreview[];

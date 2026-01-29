@@ -1,7 +1,7 @@
 import { EntityService, ListService } from "@/models/service.model";
 import { ApiService } from "./api.service";
 import { Invoice, InvoiceCreate, InvoicePreview, InvoicePreviewParams, InvoiceUpdate } from "@/models/invoice.model";
-import { PaginatableList } from "@/models/common.model";
+import { FetchListParams, PaginatableList } from "@/models/common.model";
 import { AxiosError } from "axios";
 
 export class InvoiceService
@@ -36,9 +36,10 @@ export class InvoiceService
       });
   }
 
-  findAll() {
+  findAll(params?: FetchListParams) {
+    const q = this.stringifyParams(params);
     return InvoiceService.api
-      .get<PaginatableList<Invoice>>(this.resource)
+      .get<PaginatableList<Invoice>>(this.resource+q)
       .then(res => res.data)
       .catch((error: AxiosError) => {
         throw { title: error.code, message: error.message };

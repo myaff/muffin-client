@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { reactive, computed, PropType, ref, watch } from 'vue';
+import { reactive, computed, PropType, ref, watch, onMounted, onBeforeMount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
 import { useClientsStore } from '@/store/clients';
 import { addBusinessDays, format, startOfMonth } from 'date-fns';
-import { Invoice, InvoiceCreate, InvoiceEntryPreview, InvoicePreviewParams, InvoiceStatus } from '@/models/invoice.model';
+import { Invoice, InvoiceCreate, InvoiceEntry, InvoiceEntryPreview, InvoicePreviewParams, InvoiceStatus } from '@/models/invoice.model';
 import { Client } from '@/models/clients.model';
 import InvoiceEntriesCreateUpdate from './InvoiceEntriesCreateUpdate.vue';
 import { useInvoicesStore } from '@/store/invoices';
@@ -37,7 +37,8 @@ const clients = computed(() => clientsStore.list);
 const invoicesStore = useInvoicesStore();
 
 const isLoading = ref(false);
-const entries = ref<Map<string, InvoiceEntryPreview>>(new Map());
+const existingEntries = ref<Map<string, Omit<InvoiceEntry, 'invoice'>> | null>(null);
+const previewEntries = ref<Map<string, InvoiceEntryPreview>>(new Map());
 const total = ref(0);
 
 // form
@@ -77,28 +78,55 @@ const selected = ref<string[]>([]);
 const entriesNames = ref<{ [key: string]: string }>({});
 watch(selected, value => {
   total.value = value.reduce((sum, key) => {
-    sum += entries.value.get(key)?.total ?? 0;
+    if (existingEntries.value) {
+      sum += existingEntries.value.get(key)?.total ?? 0;
+    }
+    sum += previewEntries.value.get(key)?.total ?? 0;
     return sum;
   }, 0);
-});
+}, { flush: 'post', deep: true });
 
+// details
+const details = computed(() => {
+  if (!props.invoice) return null;
+  return invoicesStore.detailsMap.get(props.invoice.id);
+});
+const fetchDetail = (id: Invoice['id']) => {
+  return invoicesStore.getDetail(id).then(data => {
+    existingEntries.value = new Map(data.entries.map(entry => [entry.key, entry]));
+    existingEntries.value.forEach(entry => {
+      selected.value.push(entry.key);
+      console.log('add selected', entry.key);
+      entriesNames.value[entry.key] = entry.name;
+    });
+  });
+}
 function fetchPreview(params: InvoicePreviewParams) {
   isLoading.value = true;
   return invoicesStore.service
     .findPreview(params)
     .then(data => {
-      entries.value = new Map(data.entries.map(entry => [entry.key, entry]));
-      entries.value.forEach(entry => {
-        selected.value.push(entry.key);
+      previewEntries.value = new Map(data.entries.map(entry => [entry.key, entry]));
+      previewEntries.value.forEach(entry => {
+        if (!existingEntries.value) {
+          selected.value.push(entry.key);
+        }
         entriesNames.value[entry.key] = entry.name;
       });
-      total.value = data.total;
     })
     .finally(() => isLoading.value = false);
 }
-watch(filter, (value) => {
-  if (value?.clientId) fetchPreview(value as InvoicePreviewParams);
-}, { immediate: true, flush: 'post' });
+
+onBeforeMount(async () => {
+  if (props.invoice) {
+    await fetchDetail(props.invoice.id);
+    await fetchPreview(filter.value as InvoicePreviewParams);
+  }
+})
+
+watch(filter, async (value) => {
+  if (value?.clientId) await fetchPreview(value as InvoicePreviewParams);
+}, { flush: 'post' });
 
 const statuses = computed(() => {
   return Object.values(InvoiceStatus).map(key => ({
@@ -140,6 +168,7 @@ const cancel = () => {
               v-model="formData.client"
               :items="clients"
               :label="t('invoice.fields.client')"
+              :disabled="!!invoice?.id"
               item-title="name"
               item-value="id"
               class="mb-4"
@@ -187,7 +216,8 @@ const cancel = () => {
             <InvoiceEntriesCreateUpdate
               v-if="selectedClient"
               :client="selectedClient"
-              :entries="entries"
+              :entries="existingEntries"
+              :preview="previewEntries"
               :is-loading="isLoading"
               v-model:names="entriesNames"
               v-model:selected="selected"
@@ -202,7 +232,7 @@ const cancel = () => {
         {{ t('btn.cancel') }}
       </v-btn>
       <v-btn color="primary" variant="flat" @click="submit">
-        {{ t('btn.submit') }}
+        {{ t('btn.save') }}
       </v-btn>
     </v-card-actions>
   </v-card>

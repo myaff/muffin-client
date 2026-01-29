@@ -18,28 +18,18 @@ export const useTrackingStore = defineStore('tracking', () => {
     return service.findOne(id);
   }
 
-  const create = (formData: TrackingCreate | TrackingCreate[], needRefetch = true) => {
-    return service.create(formData)
-      .then(data => {
-        if (needRefetch) fetchList();
-        return data;
-      });
+  const create = (formData: TrackingCreate | TrackingCreate[]) => {
+    return service.create(formData);
   }
 
-  const update = (formData: TrackingUpdate | TrackingUpdate[], needRefetch = true) => {
-    if (Array.isArray(formData)) return updateMany(formData, needRefetch);
-    else return service.update(formData.id, formData).then(res => {
-      if (needRefetch) fetchList()
-      return res;
-    });
+  const update = (formData: TrackingUpdate | TrackingUpdate[]) => {
+    if (Array.isArray(formData)) return updateMany(formData);
+    else return service.update(formData.id, formData);
   }
 
-  const updateMany = (items: TrackingUpdate[], needRefetch = true) => {
+  const updateMany = (items: TrackingUpdate[]) => {
     const reqs = items.map((item => service.update(item.id, item)));
-    return Promise.all(reqs).then(res => {
-      if (needRefetch) fetchList();
-      return res;
-    })
+    return Promise.all(reqs);
   }
 
   return {

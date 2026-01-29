@@ -56,7 +56,7 @@ const listMapped = computed(() => {
         : t('transactionCategory.uncategorized'),
       subtitle: `${d(item.date, 'short')}, ${item.bankAccount.name}`,
       shownAmount: isExpense ? item.amount * -1 : item.amount,
-      color: isExpense ? 'error' : 'success',
+      color: isExpense ? 'red' : 'green',
     }
   });
 });
@@ -128,7 +128,7 @@ defineExpose({ openCreation });
             size="small"
             class="ml-1"
             variant="plain"
-            color="error"
+            color="red-darken-1"
             :disabled="isDeleting"
             :loading="isDeleting && entityToDelete === item.id"
             @click="openDeletion(item.id)" />
